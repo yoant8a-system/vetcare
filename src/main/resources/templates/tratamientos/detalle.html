@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Tratamiento - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1 th:text="${t.DESCRIPCION}"></h1>
+            <div class="sub">
+                <a th:href="@{/mascotas/{id}(id=${t.ID_MASCOTA})}" th:text="${t.MASCOTA}"></a> &middot; <span th:text="${t.PROPIETARIO}"></span>
+                &middot; indicado por <span th:text="${t.VETERINARIO}"></span></div></div>
+        <a class="btn btn-light" th:href="@{/tratamientos}"><i class="bi bi-arrow-left me-1"></i>Tratamientos</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <div class="position-relative d-inline-block mb-2">
+                        <svg width="140" height="140" viewBox="0 0 36 36">
+                            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e2e8f0" stroke-width="3"/>
+                            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#0d9488" stroke-width="3" stroke-linecap="round"
+                                    transform="rotate(-90 18 18)" th:attr="stroke-dasharray=${t.AVANCE} + ' 100'"/>
+                        </svg>
+                        <div class="position-absolute top-50 start-50 translate-middle fs-3 fw-bold" th:text="${t.AVANCE} + '%'"></div>
+                    </div>
+                    <div><span class="estado" th:classappend="'estado-' + ${t.ESTADO}" th:text="${t.ESTADO}"></span></div>
+                    <dl class="row small text-start mt-3 mb-0">
+                        <dt class="col-6 text-muted">Inicio</dt><dd class="col-6" th:text="${#dates.format(t.FECHA_INICIO, 'dd/MM/yyyy')}"></dd>
+                        <dt class="col-6 text-muted">Sesiones</dt><dd class="col-6" th:text="${#lists.size(sesiones)} + ' de ' + ${t.SESIONES_PROGRAMADAS}"></dd>
+                        <dt class="col-6 text-muted">Frecuencia</dt><dd class="col-6" th:text="'cada ' + ${t.FRECUENCIA_DIAS} + ' dia(s)'"></dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="card" th:if="${t.ESTADO == 'EN_CURSO'}">
+                <div class="card-header"><i class="bi bi-plus-circle me-1 text-primary"></i>Registrar sesion
+                    <span class="concepto ms-1">PR_REGISTRAR_SESION</span></div>
+                <div class="card-body">
+                    <form method="post" th:action="@{/tratamientos/{id}/sesion(id=${t.ID_TRATAMIENTO})}">
+                        <div class="mb-2" th:unless="${u.esVeterinario()}">
+                            <select name="veterinario" class="form-select" required>
+                                <option th:each="v : ${veterinarios}" th:value="${v.ID_VETERINARIO}" th:text="${v.NOMBRE}"></option>
+                            </select>
+                        </div>
+                        <textarea name="obs" class="form-control mb-2" rows="2" maxlength="300" placeholder="Observaciones de la sesion"></textarea>
+                        <button class="btn btn-primary w-100"><i class="bi bi-check2 me-1"></i>Registrar sesion</button>
+                        <div class="form-text">Al llegar a la ultima sesion, Oracle lo marca COMPLETADO.</div>
+                    </form>
+                    <form class="mt-2" method="post" th:action="@{/tratamientos/{id}/suspender(id=${t.ID_TRATAMIENTO})}" data-confirmar="¿Suspender el tratamiento?">
+                        <button class="btn btn-outline-danger btn-sm w-100"><i class="bi bi-pause-circle me-1"></i>Suspender</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">Sesiones realizadas <span class="concepto ms-1">TR-03</span></div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex gap-3" th:each="s : ${sesiones}">
+                        <span class="avatar-usuario" th:text="${s.NUMERO}"></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" th:text="${#dates.format(s.FECHA, 'dd/MM/yyyy HH:mm')}"></div>
+                            <div class="small text-muted" th:text="${s.VETERINARIO}"></div>
+                            <div class="small" th:text="${s.OBSERVACIONES}"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item vacio" th:if="${#lists.isEmpty(sesiones)}"><i class="bi bi-calendar2-x"></i>Aun no hay sesiones</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

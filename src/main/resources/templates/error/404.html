@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>No encontrado - VetCare</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex align-items-center justify-content-center" style="min-height:100vh">
+<div class="text-center p-4">
+    <img th:src="@{/img/perro.svg}" width="140" alt="">
+    <h1 class="fw-bold mt-3">404</h1>
+    <p class="text-muted">Buscamos por todos lados y no encontramos esta pagina.</p>
+    <a class="btn btn-primary" th:href="@{/}"><i class="bi bi-house me-1"></i>Ir al tablero</a>
+</div>
+</body>
+</html>

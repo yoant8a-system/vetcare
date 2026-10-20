@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Tablero - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div>
+            <h1>Hola, <span th:text="${u.nombre()}"></span> 👋</h1>
+            <div class="sub" th:text="${hoyTexto}"></div>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/citas/llegada}" th:if="${!u.esVeterinario()}"><i class="bi bi-heart-pulse me-1"></i>Triaje sin cita</a>
+            <a class="btn btn-primary" th:href="@{/citas/nueva}" th:if="${u.tieneRol('ADMIN','RECEPCION')}"><i class="bi bi-calendar-plus me-1"></i>Nueva cita</a>
+            <a class="btn btn-primary" th:href="@{/consultorio}" th:if="${u.esVeterinario()}"><i class="bi bi-clipboard2-pulse me-1"></i>Ir a mi consultorio</a>
+        </div>
+    </div>
+
+    <!-- KPIs [DA-01] -->
+    <div class="alert alert-warning" th:if="${kpiError}"><i class="bi bi-code-slash me-1"></i><span th:text="${kpiError}"></span></div>
+    <div class="row g-3 mb-3" th:if="${kpi}">
+        <div class="col-6 col-xl-3"><div class="card kpi"><div class="icono ic-azul"><i class="bi bi-calendar-check"></i></div>
+            <div><div class="valor" th:text="${kpi.CITAS_HOY}">0</div><div class="etiqueta">Citas de hoy</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card kpi"><div class="icono ic-ambar"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="valor" th:text="${kpi.EN_ESPERA}">0</div><div class="etiqueta">En sala de espera <span class="text-muted" th:text="'(' + ${kpi.EN_ATENCION} + ' en consulta)'"></span></div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card kpi"><div class="icono ic-teal"><i class="bi bi-clipboard2-pulse"></i></div>
+            <div><div class="valor" th:text="${kpi.ATENCIONES_MES}">0</div><div class="etiqueta">Atenciones este mes</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card kpi"><div class="icono ic-rosa"><i class="bi bi-heart"></i></div>
+            <div><div class="valor" th:text="${kpi.MASCOTAS}">0</div><div class="etiqueta">Mascotas activas</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card kpi"><div class="icono ic-violeta"><i class="bi bi-bandaid"></i></div>
+            <div><div class="valor" th:text="${kpi.TRATAMIENTOS}">0</div><div class="etiqueta">Tratamientos en curso</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card kpi"><div class="icono ic-rojo"><i class="bi bi-box-seam"></i></div>
+            <div><div class="valor" th:text="${kpi.STOCK_BAJO}">0</div><div class="etiqueta">Insumos con stock bajo</div></div></div></div>
+        <div class="col-12 col-xl-6"><div class="card kpi" style="background:linear-gradient(120deg,#0f766e,#14b8a6);color:#fff">
+            <img th:src="@{/img/perro.svg}" width="52" alt=""><img th:src="@{/img/gato.svg}" width="52" alt="" style="margin-left:-18px">
+            <div><div class="fw-bold">Pantalla de sala</div><div class="small opacity-75">Abrala en un TV o proyector: anuncia por voz a cada paciente.</div></div>
+            <a class="btn btn-light btn-sm ms-auto" th:href="@{/pantalla}" target="_blank"><i class="bi bi-tv me-1"></i>Abrir</a></div></div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Grafico por dia [DA-02] -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header"><i class="bi bi-graph-up me-1 text-primary"></i>Atenciones de los ultimos 14 dias <span class="concepto ms-2">CONNECT BY LEVEL + LEFT JOIN</span></div>
+                <div class="card-body">
+                    <div class="alert alert-warning mb-0" th:if="${porDiaError}" th:text="${porDiaError}"></div>
+                    <canvas id="grafDia" height="110" th:if="${porDia}"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Grafico por especie [DA-03] -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header"><i class="bi bi-pie-chart me-1 text-primary"></i>Por especie (30 dias)</div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div class="alert alert-warning mb-0" th:if="${porEspecieError}" th:text="${porEspecieError}"></div>
+                    <canvas id="grafEspecie" th:if="${porEspecie}" style="max-height:240px"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Proximas citas [DA-04] -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock me-1 text-primary"></i>Proximas citas de hoy</span>
+                    <a th:href="@{/citas}" class="small">Ver agenda completa</a>
+                </div>
+                <div class="alert alert-warning m-3" th:if="${proximasError}" th:text="${proximasError}"></div>
+                <div class="table-responsive" th:if="${proximas}">
+                    <table class="table table-hover">
+                        <thead><tr><th>Hora</th><th>Mascota</th><th>Propietario</th><th>Veterinario</th><th>Motivo</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        <tr th:each="c : ${proximas}">
+                            <td class="fw-semibold" th:text="${#dates.format(c.FECHA_HORA, 'HH:mm')}"></td>
+                            <td th:text="${c.MASCOTA}"></td>
+                            <td th:text="${c.PROPIETARIO}"></td>
+                            <td th:text="${c.VETERINARIO}"></td>
+                            <td th:text="${c.MOTIVO}"></td>
+                            <td><span class="estado" th:classappend="'estado-' + ${c.ESTADO}" th:text="${c.ESTADO}"></span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(proximas)}"><td colspan="6"><div class="vacio"><i class="bi bi-calendar2-check"></i>No quedan citas pendientes hoy</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/chart.js/4.4.1/dist/chart.umd.js}"></script>
+    <script th:inline="javascript">
+        const porDia = /*[[${porDia}]]*/ null;
+        const porEspecie = /*[[${porEspecie}]]*/ null;
+        if (porDia) {
+            new Chart(document.getElementById('grafDia'), {
+                type: 'bar',
+                data: {
+                    labels: porDia.map(f => new Date(f.DIA).toLocaleDateString('es-PE', {weekday: 'short', day: '2-digit'})),
+                    datasets: [{label: 'Atenciones', data: porDia.map(f => f.TOTAL), backgroundColor: '#14b8a6', borderRadius: 6}]
+                },
+                options: {plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}}
+            });
+        }
+        if (porEspecie) {
+            new Chart(document.getElementById('grafEspecie'), {
+                type: 'doughnut',
+                data: {
+                    labels: porEspecie.map(f => f.ESPECIE),
+                    datasets: [{data: porEspecie.map(f => f.TOTAL), backgroundColor: ['#14b8a6', '#6366f1', '#f59e0b', '#ec4899', '#22c55e']}]
+                },
+                options: {plugins: {legend: {position: 'bottom'}}, cutout: '62%'}
+            });
+        }
+    </script>
+</section>
+</body>
+</html>

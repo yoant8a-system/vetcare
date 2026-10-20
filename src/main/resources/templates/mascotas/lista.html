@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Mascotas - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Mascotas</h1><div class="sub">Pacientes registrados &middot; <span class="concepto">MA-01 · VW_MASCOTA_DETALLE</span></div></div>
+        <a class="btn btn-primary" th:href="@{/propietarios}"><i class="bi bi-plus-lg me-1"></i>Registrar (desde su propietario)</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body border-bottom">
+            <form class="row g-2" method="get">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input class="form-control" name="q" th:value="${q}" placeholder="Nombre de la mascota, del dueño o DNI...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="especie">
+                        <option value="">Todas las especies</option>
+                        <option th:each="e : ${especies}" th:value="${e.ID_ESPECIE}" th:text="${e.NOMBRE}"
+                                th:selected="${especie != null and especie == e.ID_ESPECIE.longValue()}"></option>
+                    </select>
+                </div>
+                <div class="col-auto"><button class="btn btn-outline-primary">Filtrar</button></div>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>Mascota</th><th>Especie / raza</th><th>Sexo</th><th>Edad</th><th>Propietario</th><th>Estado</th></tr></thead>
+                <tbody>
+                <tr th:each="m : ${mascotas}">
+                    <td>
+                        <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/mascotas/{id}(id=${m.ID_MASCOTA})}">
+                            <img class="avatar-especie" th:src="@{${@vista.imagen(m.ESPECIE)}}" alt="">
+                            <span class="fw-semibold" th:text="${m.NOMBRE}"></span>
+                        </a>
+                    </td>
+                    <td><span th:text="${m.ESPECIE}"></span><div class="small text-muted" th:text="${m.RAZA}"></div></td>
+                    <td><i class="bi" th:classappend="${m.SEXO == 'M'} ? 'bi-gender-male text-primary' : 'bi-gender-female text-danger'"></i></td>
+                    <td th:text="${m.EDAD}"></td>
+                    <td><span th:text="${m.PROPIETARIO}"></span><div class="small text-muted" th:text="${m.TELEFONO}"></div></td>
+                    <td><span class="estado" th:classappend="'estado-' + ${m.ESTADO}" th:text="${m.ESTADO}"></span></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(mascotas)}"><td colspan="6"><div class="vacio"><i class="bi bi-heart"></i>No se encontraron mascotas</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

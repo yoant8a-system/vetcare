@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Veterinarios - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Veterinarios</h1><div class="sub">VE-01 &middot; especialidades unidas con <span class="concepto">LISTAGG</span></div></div>
+        <a class="btn btn-primary" th:href="@{/admin/veterinarios/nuevo}"><i class="bi bi-person-plus me-1"></i>Nuevo veterinario</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-4" th:each="v : ${veterinarios}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="avatar-usuario" style="width:54px;height:54px;font-size:1.2rem" th:text="${@vista.iniciales(v.NOMBRES + ' ' + v.APELLIDOS)}"></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold" th:text="${v.NOMBRES + ' ' + v.APELLIDOS}"></div>
+                            <div class="small text-muted" th:text="'CMVP ' + ${v.CMVP}"></div>
+                        </div>
+                        <span class="estado" th:classappend="${v.ACTIVO == 'S'} ? 'estado-ACTIVO' : 'estado-CANCELADA'" th:text="${v.ACTIVO == 'S'} ? 'Activo' : 'Inactivo'"></span>
+                    </div>
+                    <div class="small mb-1"><i class="bi bi-award me-1 text-primary"></i><span th:text="${v.ESPECIALIDADES ?: 'Sin especialidades'}"></span></div>
+                    <div class="small mb-1"><i class="bi bi-telephone me-1 text-primary"></i><span th:text="${v.TELEFONO ?: '-'}"></span></div>
+                    <div class="small"><i class="bi bi-clock me-1 text-primary"></i><span th:text="${v.BLOQUES_HORARIO} + ' bloques de horario'"></span></div>
+                </div>
+                <div class="card-footer bg-white"><a class="btn btn-sm btn-outline-primary w-100" th:href="@{/admin/veterinarios/{id}(id=${v.ID_VETERINARIO})}">
+                    <i class="bi bi-pencil me-1"></i>Editar, especialidades y horario</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

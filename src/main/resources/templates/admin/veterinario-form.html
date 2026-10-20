@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Veterinario - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1 th:text="${v['ID_VETERINARIO'] == null} ? 'Nuevo veterinario' : ${v['NOMBRES']} + ' ' + ${v['APELLIDOS']}"></h1>
+            <div class="sub">VE-02 a VE-10 &middot; relacion N:M con especialidades</div></div>
+        <a class="btn btn-light" th:href="@{/admin/veterinarios}"><i class="bi bi-arrow-left me-1"></i>Veterinarios</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Datos <span class="concepto ms-1" th:text="${v['ID_VETERINARIO'] == null} ? 'VE-03' : 'VE-04'"></span></div>
+                <div class="card-body">
+                    <form method="post" th:action="@{/admin/veterinarios/guardar}" class="row g-3">
+                        <input type="hidden" name="id" th:value="${v['ID_VETERINARIO']}">
+                        <div class="col-md-4"><label class="form-label">CMVP *</label><input name="cmvp" class="form-control" required maxlength="10" th:value="${v['CMVP']}"></div>
+                        <div class="col-md-8"><label class="form-label">Nombres *</label><input name="nombres" class="form-control" required maxlength="60" th:value="${v['NOMBRES']}"></div>
+                        <div class="col-12"><label class="form-label">Apellidos *</label><input name="apellidos" class="form-control" required maxlength="60" th:value="${v['APELLIDOS']}"></div>
+                        <div class="col-md-5"><label class="form-label">Telefono</label><input name="telefono" class="form-control" maxlength="15" th:value="${v['TELEFONO']}"></div>
+                        <div class="col-md-7"><label class="form-label">Email</label><input name="email" type="email" class="form-control" maxlength="100" th:value="${v['EMAIL']}"></div>
+                        <div class="col-12" th:if="${v['ID_VETERINARIO'] != null}">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="activo" value="S" id="act" th:checked="${v['ACTIVO'] == 'S'}">
+                                <label class="form-check-label" for="act">Activo</label>
+                            </div>
+                        </div>
+                        <div class="col-12"><button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Guardar</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <th:block th:if="${v['ID_VETERINARIO'] != null}">
+            <div class="col-lg-6">
+                <div class="card mb-3">
+                    <div class="card-header">Especialidades <span class="concepto ms-1">DELETE + INSERT en una transaccion (@Transactional)</span></div>
+                    <div class="card-body">
+                        <form method="post" th:action="@{/admin/veterinarios/{id}/especialidades(id=${v['ID_VETERINARIO']})}">
+                            <div class="form-check" th:each="e : ${especialidades}">
+                                <input class="form-check-input" type="checkbox" name="especialidad" th:value="${e.ID_ESPECIALIDAD}" th:id="'e' + ${e.ID_ESPECIALIDAD}"
+                                       th:checked="${#lists.contains(suyas, e.ID_ESPECIALIDAD.longValue())}">
+                                <label class="form-check-label" th:for="'e' + ${e.ID_ESPECIALIDAD}" th:text="${e.NOMBRE}"></label>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm mt-2">Guardar especialidades</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Horario de atencion <span class="concepto ms-1">CHECK HORA_FIN &gt; HORA_INICIO</span></div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="h : ${horarios}">
+                            <span><b th:text="${@vista.dia(h.DIA_SEMANA)}"></b> <span th:text="${h.HORA_INICIO} + ' - ' + ${h.HORA_FIN}"></span></span>
+                            <form method="post" th:action="@{/admin/veterinarios/{id}/horario/{h}/eliminar(id=${v['ID_VETERINARIO']}, h=${h.ID_HORARIO})}">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>
+                        </li>
+                    </ul>
+                    <div class="card-body border-top">
+                        <form method="post" th:action="@{/admin/veterinarios/{id}/horario(id=${v['ID_VETERINARIO']})}" class="row g-2">
+                            <div class="col-5"><select name="dia" class="form-select form-select-sm">
+                                <option th:each="d : ${#numbers.sequence(1, 7)}" th:value="${d}" th:text="${@vista.dia(d)}"></option></select></div>
+                            <div class="col-3"><input type="time" name="inicio" class="form-control form-control-sm" value="08:00" required></div>
+                            <div class="col-3"><input type="time" name="fin" class="form-control form-control-sm" value="13:00" required></div>
+                            <div class="col-1"><button class="btn btn-sm btn-primary"><i class="bi bi-plus"></i></button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+    </div>
+</section>
+</body>
+</html>

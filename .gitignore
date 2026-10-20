@@ -1,0 +1,11 @@
+target/
+config/db.properties
+*.log
+
+.idea/
+*.iml
+.vscode/
+nbproject/private/
+.settings/
+.project
+.classpath

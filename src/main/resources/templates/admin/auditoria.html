@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Auditoria - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Auditoria</h1>
+            <div class="sub">La llenan los triggers <span class="concepto">TRG_AUD_*</span>. USUARIO_APP sale de
+                <span class="concepto">SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')</span></div></div>
+        <form class="d-flex gap-2" method="get">
+            <select name="tabla" class="form-select" onchange="this.form.submit()">
+                <option value="">Todas las tablas</option>
+                <option th:each="t : ${ {'MASCOTA','CITA','USUARIO'} }" th:value="${t}" th:text="${t}" th:selected="${tabla == t}"></option>
+            </select>
+        </form>
+    </div>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead><tr><th>#</th><th>Fecha</th><th>Tabla</th><th>Operacion</th><th>ID</th><th>Detalle</th><th>Usuario app</th><th>Usuario BD</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${registros}">
+                    <td class="text-muted" th:text="${a.ID_AUDITORIA}"></td>
+                    <td class="text-nowrap" th:text="${#dates.format(a.FECHA, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                    <td th:text="${a.TABLA}"></td>
+                    <td><span class="badge" th:classappend="${a.OPERACION == 'INSERT'} ? 'text-bg-success' : (${a.OPERACION == 'DELETE'} ? 'text-bg-danger' : 'text-bg-warning')" th:text="${a.OPERACION}"></span></td>
+                    <td th:text="${a.ID_REGISTRO}"></td>
+                    <td th:text="${a.DETALLE}"></td>
+                    <td class="fw-semibold" th:text="${a.USUARIO_APP}"></td>
+                    <td class="text-muted font-monospace small" th:text="${a.USUARIO_BD}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(registros)}"><td colspan="8"><div class="vacio"><i class="bi bi-journal"></i>Sin registros</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

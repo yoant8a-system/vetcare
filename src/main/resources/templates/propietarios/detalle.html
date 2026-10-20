@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Propietario - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div>
+            <h1 th:text="${p.APELLIDOS} + ', ' + ${p.NOMBRES}"></h1>
+            <div class="sub">Cliente desde <span th:text="${#dates.format(p.FECHA_REGISTRO, 'dd/MM/yyyy')}"></span> &middot; <span class="concepto">PR-02 / MA-03</span></div>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/propietarios/{id}/editar(id=${p.ID_PROPIETARIO})}"><i class="bi bi-pencil me-1"></i>Editar</a>
+            <form method="post" th:action="@{/propietarios/{id}/eliminar(id=${p.ID_PROPIETARIO})}"
+                  data-confirmar="¿Eliminar este propietario? (Oracle lo impedira si tiene mascotas)">
+                <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <span class="avatar-usuario" style="width:72px;height:72px;font-size:1.6rem"
+                              th:text="${@vista.iniciales(p.NOMBRES + ' ' + p.APELLIDOS)}"></span>
+                    </div>
+                    <dl class="row mb-0 small">
+                        <dt class="col-4 text-muted">DNI</dt><dd class="col-8 font-monospace" th:text="${p.DNI}"></dd>
+                        <dt class="col-4 text-muted">Telefono</dt><dd class="col-8" th:text="${p.TELEFONO}"></dd>
+                        <dt class="col-4 text-muted">Email</dt><dd class="col-8" th:text="${p.EMAIL ?: '-'}"></dd>
+                        <dt class="col-4 text-muted">Direccion</dt><dd class="col-8" th:text="${p.DIRECCION ?: '-'}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-heart me-1 text-primary"></i>Mascotas</span>
+                    <a class="btn btn-sm btn-primary" th:href="@{/mascotas/nueva(propietario=${p.ID_PROPIETARIO})}"><i class="bi bi-plus-lg me-1"></i>Agregar mascota</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:each="m : ${mascotas}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3"
+                       th:href="@{/mascotas/{id}(id=${m.ID_MASCOTA})}">
+                        <img class="avatar-especie" th:src="@{${@vista.imagen(m.ESPECIE)}}" alt="">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" th:text="${m.NOMBRE}"></div>
+                            <div class="small text-muted" th:text="${m.ESPECIE} + ' · ' + ${m.RAZA} + ' · ' + (${m.SEXO} == 'M' ? 'Macho' : 'Hembra') + (${m.EDAD} != null ? ' · ' + ${m.EDAD} : '')"></div>
+                        </div>
+                        <span class="estado" th:classappend="'estado-' + ${m.ESTADO}" th:text="${m.ESTADO}"></span>
+                    </a>
+                    <div th:if="${#lists.isEmpty(mascotas)}" class="vacio"><i class="bi bi-heart"></i>Este propietario aun no tiene mascotas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

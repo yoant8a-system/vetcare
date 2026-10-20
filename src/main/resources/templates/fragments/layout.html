@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, contenido)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:replace="${titulo}">VetCare</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo.svg}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app">
+    <!-- ======================= MENU LATERAL (segun el rol) ======================= -->
+    <aside class="sidebar">
+        <a class="marca" th:href="@{/}">
+            <img th:src="@{/img/logo.svg}" alt="">
+            <span>VetCare<small>Clinica Veterinaria</small></span>
+        </a>
+
+        <div class="seccion">General</div>
+        <a class="item" th:href="@{/}" th:classappend="${ruta == '/'} ? activo"><i class="bi bi-grid-1x2"></i> Tablero</a>
+        <a class="item" th:href="@{/alertas}" th:classappend="${#strings.startsWith(ruta, '/alertas')} ? activo">
+            <i class="bi bi-bell"></i> Alertas
+            <span class="badge rounded-pill bg-danger ms-auto" th:if="${alertasPendientes != null and alertasPendientes > 0}"
+                  th:text="${alertasPendientes}">3</span>
+        </a>
+
+        <div class="seccion">Atencion</div>
+        <a class="item" th:href="@{/citas}" th:classappend="${#strings.startsWith(ruta, '/citas')} ? activo"><i class="bi bi-calendar-week"></i> Agenda de citas</a>
+        <a class="item" th:if="${u.tieneRol('ADMIN', 'RECEPCION', 'VETERINARIO')}" th:href="@{/citas/llegada}"
+           th:classappend="${ruta == '/citas/llegada'} ? activo"><i class="bi bi-heart-pulse"></i> Triaje sin cita</a>
+        <a class="item" th:if="${u.esVeterinario()}" th:href="@{/consultorio}" th:classappend="${#strings.startsWith(ruta, '/consultorio')} ? activo"><i class="bi bi-clipboard2-pulse"></i> Mi consultorio</a>
+        <a class="item" th:if="${u.tieneRol('ADMIN', 'VETERINARIO')}" th:href="@{/tratamientos}" th:classappend="${#strings.startsWith(ruta, '/tratamientos')} ? activo"><i class="bi bi-bandaid"></i> Tratamientos</a>
+        <a class="item" th:href="@{/pantalla}" target="_blank"><i class="bi bi-tv"></i> Pantalla de sala <i class="bi bi-box-arrow-up-right ms-auto small"></i></a>
+
+        <div class="seccion">Pacientes</div>
+        <a class="item" th:href="@{/propietarios}" th:classappend="${#strings.startsWith(ruta, '/propietarios')} ? activo"><i class="bi bi-people"></i> Propietarios</a>
+        <a class="item" th:href="@{/mascotas}" th:classappend="${#strings.startsWith(ruta, '/mascotas')} ? activo"><i class="bi bi-heart"></i> Mascotas</a>
+
+        <div class="seccion">Gestion</div>
+        <a class="item" th:if="${u.tieneRol('ADMIN', 'VETERINARIO')}" th:href="@{/inventario}" th:classappend="${#strings.startsWith(ruta, '/inventario')} ? activo"><i class="bi bi-box-seam"></i> Inventario</a>
+        <a class="item" th:href="@{/reportes}" th:classappend="${#strings.startsWith(ruta, '/reportes')} ? activo"><i class="bi bi-bar-chart-line"></i> Reportes PL/SQL</a>
+
+        <th:block th:if="${u.esAdmin()}">
+            <div class="seccion">Administracion</div>
+            <a class="item" th:href="@{/admin/veterinarios}" th:classappend="${#strings.startsWith(ruta, '/admin/veterinarios')} ? activo"><i class="bi bi-person-badge"></i> Veterinarios</a>
+            <a class="item" th:href="@{/admin/catalogos}" th:classappend="${#strings.startsWith(ruta, '/admin/catalogos')} ? activo"><i class="bi bi-collection"></i> Catalogos</a>
+            <a class="item" th:href="@{/admin/usuarios}" th:classappend="${#strings.startsWith(ruta, '/admin/usuarios')} ? activo"><i class="bi bi-shield-lock"></i> Usuarios</a>
+            <a class="item" th:href="@{/admin/auditoria}" th:classappend="${#strings.startsWith(ruta, '/admin/auditoria')} ? activo"><i class="bi bi-journal-text"></i> Auditoria</a>
+        </th:block>
+
+        <div class="pie">
+            <div class="badge text-bg-warning mb-2" th:if="${modoSolucion > 0}" title="app.completar_con_solucion=true">
+                <i class="bi bi-lightbulb"></i> Completando con la solucion</div>
+            <div>Oracle Database XE 21c<br>Spring Boot + JDBC</div>
+        </div>
+    </aside>
+
+    <!-- ======================= CONTENIDO ======================= -->
+    <div class="main">
+        <header class="topbar">
+            <button class="btn btn-light btn-menu" type="button"><i class="bi bi-list"></i></button>
+            <span class="titulo"></span>
+            <div class="acciones">
+                <a class="campana me-3" th:href="@{/alertas}" title="Alertas">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge rounded-pill bg-danger" th:if="${alertasPendientes != null and alertasPendientes > 0}"
+                          th:text="${alertasPendientes}"></span>
+                </a>
+                <div class="dropdown">
+                    <a class="d-flex align-items-center gap-2 text-decoration-none text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <span class="avatar-usuario" th:text="${@vista.iniciales(u.nombre())}">AD</span>
+                        <span class="d-none d-md-inline">
+                            <span class="fw-semibold" th:text="${u.nombre()}">Usuario</span><br>
+                            <small class="text-muted" th:text="${u.rol()}">ROL</small>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" th:text="'Usuario: ' + ${u.usuario()}"></span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesion</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="contenido">
+            <div class="alert alert-success alert-dismissible fade show" th:if="${ok}">
+                <i class="bi bi-check-circle-fill me-2"></i><span th:text="${ok}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div class="alert alert-danger alert-dismissible fade show" th:if="${error}">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:replace="${contenido}"></div>
+        </main>
+    </div>
+</div>
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Alertas - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Alertas</h1>
+            <div class="sub">Las genera cada noche el job <span class="concepto">JOB_TAREAS_NOCTURNAS</span> (DBMS_SCHEDULER) con
+                <span class="concepto">MERGE</span> en PKG_ALERTAS</div></div>
+        <div class="d-flex gap-2">
+            <form method="post" th:action="@{/alertas/generar}"><button class="btn btn-outline-primary"><i class="bi bi-lightning-charge me-1"></i>Ejecutar el job ahora</button></form>
+            <form method="post" th:action="@{/alertas/leer-todas}"><button class="btn btn-light"><i class="bi bi-check2-all me-1"></i>Marcar todas</button></form>
+        </div>
+    </div>
+    <div class="card">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex align-items-center gap-3 py-3" th:each="a : ${alertas}" th:classappend="${a.LEIDA == 'S'} ? 'opacity-50'">
+                <div class="kpi p-0"><div class="icono" style="width:44px;height:44px;font-size:1.2rem"
+                     th:classappend="${a.TIPO == 'VACUNA'} ? 'ic-violeta' : (${a.TIPO == 'STOCK'} ? 'ic-rojo' : 'ic-ambar')">
+                    <i class="bi" th:classappend="${a.TIPO == 'VACUNA'} ? 'bi-shield-exclamation' : (${a.TIPO == 'STOCK'} ? 'bi-box-seam' : 'bi-calendar-x')"></i></div></div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold" th:text="${a.MENSAJE}"></div>
+                    <div class="small text-muted"><span th:text="${a.TIPO}"></span> &middot; <span th:text="${#dates.format(a.FECHA, 'dd/MM/yyyy HH:mm')}"></span></div>
+                </div>
+                <a class="btn btn-sm btn-light" th:if="${a.TIPO == 'STOCK'}" th:href="@{/reportes/kardex(medicamento=${a.ID_REFERENCIA})}">Ver kardex</a>
+                <form method="post" th:if="${a.LEIDA == 'N'}" th:action="@{/alertas/{id}/leer(id=${a.ID_ALERTA})}">
+                    <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-check2"></i></button></form>
+            </li>
+            <li class="list-group-item vacio" th:if="${#lists.isEmpty(alertas)}"><i class="bi bi-bell-slash"></i>No hay alertas</li>
+        </ul>
+    </div>
+</section>
+</body>
+</html>

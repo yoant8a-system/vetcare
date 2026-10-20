@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Ficha clinica - VetCare</title></head>
+<body>
+<section>
+    <div class="ficha-cabecera mb-3">
+        <img class="avatar-especie grande" th:src="@{${@vista.imagen(m.ESPECIE)}}" alt="">
+        <div class="flex-grow-1">
+            <h2>
+                <span th:text="${m.NOMBRE}"></span>
+                <i class="bi fs-4" th:classappend="${m.SEXO == 'M'} ? 'bi-gender-male' : 'bi-gender-female'"></i>
+                <span class="badge bg-light text-danger fs-6 align-middle" th:if="${m.ESTADO == 'FALLECIDO'}">Fallecido</span>
+            </h2>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                <span class="dato"><i class="bi bi-tag me-1"></i><span th:text="${m.ESPECIE + ' · ' + m.RAZA}"></span></span>
+                <span class="dato" th:if="${m.EDAD}"><i class="bi bi-cake2 me-1"></i><span th:text="${m.EDAD}"></span></span>
+                <span class="dato" th:if="${m.COLOR}"><i class="bi bi-palette me-1"></i><span th:text="${m.COLOR}"></span></span>
+                <span class="dato"><i class="bi bi-scissors me-1"></i><span th:text="${m.ESTERILIZADO == 'S'} ? 'Esterilizado' : 'No esterilizado'"></span></span>
+                <span class="dato" th:if="${m.PADRE}"><i class="bi bi-gender-male me-1"></i>Padre: <span th:text="${m.PADRE}"></span></span>
+                <span class="dato" th:if="${m.MADRE}"><i class="bi bi-gender-female me-1"></i>Madre: <span th:text="${m.MADRE}"></span></span>
+            </div>
+            <div class="mt-2 small opacity-75">
+                <i class="bi bi-person me-1"></i><a class="text-white" th:href="@{/propietarios/{id}(id=${m.ID_PROPIETARIO})}" th:text="${m.PROPIETARIO}"></a>
+                &middot; <i class="bi bi-telephone"></i> <span th:text="${m.TELEFONO}"></span>
+            </div>
+        </div>
+        <div class="d-flex flex-column gap-2">
+            <a class="btn btn-light btn-sm" th:if="${u.tieneRol('ADMIN','RECEPCION')}" th:href="@{/citas/nueva(mascota=${m.ID_MASCOTA})}"><i class="bi bi-calendar-plus me-1"></i>Agendar cita</a>
+            <a class="btn btn-outline-light btn-sm" th:href="@{/mascotas/{id}/editar(id=${m.ID_MASCOTA})}"><i class="bi bi-pencil me-1"></i>Editar</a>
+            <form method="post" th:action="@{/mascotas/{id}/eliminar(id=${m.ID_MASCOTA})}" data-confirmar="¿Eliminar la mascota? Oracle lo impedira si tiene historial (ORA-02292)">
+                <input type="hidden" name="propietario" th:value="${m.ID_PROPIETARIO}">
+                <button class="btn btn-outline-light btn-sm w-100"><i class="bi bi-trash me-1"></i>Eliminar</button>
+            </form>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#historia"><i class="bi bi-journal-medical me-1"></i>Historia clinica</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#vacunas"><i class="bi bi-shield-plus me-1"></i>Vacunas</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tratamientos"><i class="bi bi-bandaid me-1"></i>Tratamientos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#citas"><i class="bi bi-calendar-week me-1"></i>Citas</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#genealogia"><i class="bi bi-diagram-3 me-1"></i>Genealogia</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Historia: PKG_REPORTES.FN_HISTORIA_CLINICA -->
+        <div class="tab-pane fade show active" id="historia">
+            <div class="card">
+                <div class="card-header"><span class="concepto">PKG_REPORTES.FN_HISTORIA_CLINICA (SYS_REFCURSOR)</span></div>
+                <div class="alert alert-warning m-3" th:if="${historiaError}" th:text="${historiaError}"></div>
+                <div th:if="${historia}" th:replace="~{fragments/tabla :: cursor(${historia}, 'Sin atenciones registradas')}"></div>
+            </div>
+        </div>
+
+        <!-- Vacunas: VC-01 + registrar VC-03 -->
+        <div class="tab-pane fade" id="vacunas">
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">Carnet de vacunacion <span class="concepto ms-2">VC-01 · ROW_NUMBER() OVER</span></div>
+                        <div class="alert alert-warning m-3" th:if="${carnetError}" th:text="${carnetError}"></div>
+                        <div class="table-responsive" th:if="${carnet}">
+                            <table class="table table-sm table-hover">
+                                <thead><tr><th>Vacuna</th><th>Aplicada</th><th>Proxima dosis</th><th>Lote</th><th>Veterinario</th><th>Situacion</th></tr></thead>
+                                <tbody>
+                                <tr th:each="v : ${carnet}">
+                                    <td class="fw-semibold" th:text="${v.VACUNA}"></td>
+                                    <td th:text="${#dates.format(v.FECHA_APLICACION, 'dd/MM/yyyy')}"></td>
+                                    <td th:text="${v.PROXIMA_DOSIS != null ? #dates.format(v.PROXIMA_DOSIS, 'dd/MM/yyyy') : '-'}"></td>
+                                    <td class="text-muted" th:text="${v.LOTE}"></td>
+                                    <td th:text="${v.VETERINARIO}"></td>
+                                    <td><span class="estado" th:classappend="'estado-' + ${#strings.substringBefore(v.SITUACION + ' ', ' ')}" th:text="${v.SITUACION}"></span></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(carnet)}"><td colspan="6"><div class="vacio"><i class="bi bi-shield"></i>Sin vacunas registradas</div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4" th:if="${m.ESTADO == 'ACTIVO' and u.tieneRol('ADMIN','VETERINARIO')}">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-plus-circle me-1 text-primary"></i>Registrar vacuna <span class="concepto ms-1">VC-03</span></div>
+                        <div class="card-body">
+                            <div class="alert alert-warning" th:if="${vacunasEspecieError}" th:text="${vacunasEspecieError}"></div>
+                            <form method="post" th:action="@{/mascotas/{id}/vacunar(id=${m.ID_MASCOTA})}" th:if="${vacunasEspecie}">
+                                <div class="mb-2">
+                                    <label class="form-label small">Vacuna (de su especie)</label>
+                                    <select name="vacuna" class="form-select" required>
+                                        <option th:each="v : ${vacunasEspecie}" th:value="${v.ID_VACUNA}"
+                                                th:text="${v.NOMBRE} + (${v.REFUERZO_DIAS} != null ? ' (refuerzo cada ' + ${v.REFUERZO_DIAS} + ' dias)' : ' (dosis unica)')"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-2" th:unless="${u.esVeterinario()}">
+                                    <label class="form-label small">Veterinario</label>
+                                    <select name="veterinario" class="form-select" required>
+                                        <option th:each="v : ${veterinarios}" th:value="${v.ID_VETERINARIO}" th:text="${v.NOMBRE}"></option>
+                                    </select>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6"><label class="form-label small">Fecha</label>
+                                        <input type="date" name="fecha" class="form-control" th:value="${hoy}" required></div>
+                                    <div class="col-6"><label class="form-label small">Lote</label>
+                                        <input name="lote" class="form-control" maxlength="20"></div>
+                                </div>
+                                <button class="btn btn-primary w-100"><i class="bi bi-shield-plus me-1"></i>Registrar</button>
+                                <div class="form-text">La proxima dosis la calcula el trigger <span class="concepto">TRG_VACUNACION</span></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tratamientos TR-04 -->
+        <div class="tab-pane fade" id="tratamientos">
+            <div class="card">
+                <div class="alert alert-warning m-3" th:if="${tratamientosError}" th:text="${tratamientosError}"></div>
+                <div class="table-responsive" th:if="${tratamientos}">
+                    <table class="table table-hover">
+                        <thead><tr><th>Tratamiento</th><th>Inicio</th><th>Sesiones</th><th>Estado</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="t : ${tratamientos}">
+                            <td class="fw-semibold" th:text="${t.DESCRIPCION}"></td>
+                            <td th:text="${#dates.format(t.FECHA_INICIO, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${t.REALIZADAS} + ' / ' + ${t.SESIONES_PROGRAMADAS}"></td>
+                            <td><span class="estado" th:classappend="'estado-' + ${t.ESTADO}" th:text="${t.ESTADO}"></span></td>
+                            <td class="text-end"><a class="btn btn-sm btn-light" th:if="${u.tieneRol('ADMIN','VETERINARIO')}"
+                                                    th:href="@{/tratamientos/{id}(id=${t.ID_TRATAMIENTO})}"><i class="bi bi-chevron-right"></i></a></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tratamientos)}"><td colspan="5"><div class="vacio"><i class="bi bi-bandaid"></i>Sin tratamientos</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Citas CI-03 -->
+        <div class="tab-pane fade" id="citas">
+            <div class="card">
+                <div class="alert alert-warning m-3" th:if="${citasError}" th:text="${citasError}"></div>
+                <div class="table-responsive" th:if="${citas}">
+                    <table class="table table-hover">
+                        <thead><tr><th>Fecha</th><th>Motivo</th><th>Veterinario</th><th>Origen</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        <tr th:each="c : ${citas}">
+                            <td th:text="${#dates.format(c.FECHA_HORA, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${c.MOTIVO}"></td>
+                            <td th:text="${c.VETERINARIO ?: '-'}"></td>
+                            <td><span class="badge text-bg-light border" th:text="${c.ORIGEN}"></span></td>
+                            <td><span class="estado" th:classappend="'estado-' + ${c.ESTADO}" th:text="${c.ESTADO}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Genealogia PKG_REPORTES.FN_GENEALOGIA -->
+        <div class="tab-pane fade" id="genealogia">
+            <div class="card">
+                <div class="card-header"><span class="concepto">CONNECT BY NOCYCLE ID_MASCOTA IN (PRIOR ID_PADRE, PRIOR ID_MADRE)</span></div>
+                <div class="alert alert-warning m-3" th:if="${genealogiaError}" th:text="${genealogiaError}"></div>
+                <div th:if="${genealogia}" th:replace="~{fragments/tabla :: cursor(${genealogia}, 'Sin datos')}"></div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

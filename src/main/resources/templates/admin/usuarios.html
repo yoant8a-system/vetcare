@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Usuarios - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Usuarios del sistema</h1>
+            <div class="sub">Las claves se guardan como SHA-256 con <span class="concepto">STANDARD_HASH</span> en <span class="concepto">PKG_SEGURIDAD</span></div></div>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Ultimo acceso</th><th>Estado</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="x : ${usuarios}">
+                            <td class="font-monospace fw-semibold" th:text="${x.USUARIO}"></td>
+                            <td><span th:text="${x.NOMBRE_COMPLETO}"></span><div class="small text-muted" th:if="${x.VETERINARIO}" th:text="'Vet: ' + ${x.VETERINARIO}"></div></td>
+                            <td><span class="badge" th:classappend="${x.ROL == 'ADMIN'} ? 'text-bg-dark' : (${x.ROL == 'VETERINARIO'} ? 'text-bg-primary' : 'text-bg-info')" th:text="${x.ROL}"></span></td>
+                            <td class="small" th:text="${x.ULTIMO_ACCESO != null ? #dates.format(x.ULTIMO_ACCESO, 'dd/MM/yyyy HH:mm') : 'nunca'}"></td>
+                            <td><span class="estado" th:classappend="${x.ACTIVO == 'S'} ? 'estado-ACTIVO' : 'estado-CANCELADA'" th:text="${x.ACTIVO == 'S'} ? 'Activo' : 'Inactivo'"></span></td>
+                            <td class="text-end"><a class="btn btn-sm btn-light" th:href="@{/admin/usuarios(editar=${x.ID_USUARIO})}"><i class="bi bi-pencil"></i></a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header" th:text="${edit['ID_USUARIO'] == null} ? 'Nuevo usuario (PR_CREAR_USUARIO)' : 'Editar usuario (US-03)'"></div>
+                <div class="card-body">
+                    <form method="post" th:action="@{/admin/usuarios/guardar}">
+                        <input type="hidden" name="id" th:value="${edit['ID_USUARIO']}">
+                        <div class="mb-2"><label class="form-label small">Usuario</label>
+                            <input name="usuario" class="form-control" th:value="${edit['USUARIO']}" th:readonly="${edit['ID_USUARIO'] != null}"
+                                   required pattern="[a-z][a-z0-9._]{2,29}" title="minusculas, 3 a 30 caracteres"></div>
+                        <div class="mb-2"><label class="form-label small">Nombre completo</label>
+                            <input name="nombre" class="form-control" required maxlength="100" th:value="${edit['NOMBRE_COMPLETO']}"></div>
+                        <div class="mb-2"><label class="form-label small">Rol</label>
+                            <select name="rol" class="form-select">
+                                <option th:each="r : ${ {'RECEPCION','VETERINARIO','ADMIN'} }" th:value="${r}" th:text="${r}" th:selected="${edit['ROL'] == r}"></option>
+                            </select></div>
+                        <div class="mb-2"><label class="form-label small">Veterinario vinculado (solo rol VETERINARIO)</label>
+                            <select name="veterinario" class="form-select">
+                                <option value="">(ninguno)</option>
+                                <option th:each="v : ${veterinarios}" th:value="${v.ID_VETERINARIO}" th:text="${v.NOMBRE}"
+                                        th:selected="${edit['ID_VETERINARIO'] != null and edit['ID_VETERINARIO'] == v.ID_VETERINARIO}"></option>
+                            </select></div>
+                        <div class="mb-2"><label class="form-label small" th:text="${edit['ID_USUARIO'] == null} ? 'Clave' : 'Nueva clave (vacio = no cambiar)'"></label>
+                            <input name="clave" type="password" class="form-control" th:required="${edit['ID_USUARIO'] == null}" minlength="6"></div>
+                        <div class="form-check form-switch mb-3" th:if="${edit['ID_USUARIO'] != null}">
+                            <input class="form-check-input" type="checkbox" name="activo" value="S" id="ua" th:checked="${edit['ACTIVO'] == 'S'}">
+                            <label class="form-check-label" for="ua">Activo</label>
+                        </div>
+                        <input type="hidden" name="activo" value="S" th:if="${edit['ID_USUARIO'] == null}">
+                        <button class="btn btn-primary w-100">Guardar</button>
+                        <a class="btn btn-link w-100" th:if="${edit['ID_USUARIO'] != null}" th:href="@{/admin/usuarios}">Nuevo usuario</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

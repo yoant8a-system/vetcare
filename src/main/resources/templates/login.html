@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VetCare - Ingresar</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo.svg}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="login-fondo">
+    <div class="login-arte">
+        <img th:src="@{/img/login.svg}" alt="Perro y gato">
+        <h2 class="fw-bold mt-3" style="color:#0f766e">Cuidamos a quienes mas quieres</h2>
+        <p class="text-muted">Citas, triaje, historia clinica, tratamientos, vacunas e inventario.</p>
+    </div>
+    <div class="login-panel">
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <img th:src="@{/img/logo.svg}" width="48" alt="">
+            <div><div class="fs-4 fw-bold">VetCare</div><div class="text-muted small">Sistema de gestion veterinaria</div></div>
+        </div>
+        <h1 class="h4 fw-bold mb-1">Bienvenido</h1>
+        <p class="text-muted mb-4">Ingrese con su usuario del sistema</p>
+
+        <div class="alert alert-danger py-2" th:if="${error}"><i class="bi bi-exclamation-circle me-1"></i><span th:text="${error}"></span></div>
+
+        <form method="post" th:action="@{/login}">
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input name="usuario" class="form-control form-control-lg" th:value="${usuario}" required autofocus>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Clave</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input name="clave" type="password" class="form-control form-control-lg" required>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-lg w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Ingresar</button>
+        </form>
+
+        <div class="card mt-4 border-0" style="background:#f0fdfa">
+            <div class="card-body small">
+                <div class="fw-semibold mb-1"><i class="bi bi-info-circle me-1"></i>Usuarios de prueba</div>
+                <div><code>admin</code> / admin123 &middot; administrador</div>
+                <div><code>recepcion</code> / recep123 &middot; recepcion</div>
+                <div><code>lmendoza</code>, <code>cquispe</code> / vet123 &middot; veterinarios</div>
+            </div>
+        </div>
+        <a class="small text-muted mt-3" th:href="@{/pantalla}" target="_blank"><i class="bi bi-tv me-1"></i>Abrir pantalla de sala</a>
+    </div>
+</div>
+</body>
+</html>

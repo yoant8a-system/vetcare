@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Propietario - VetCare</title></head>
+<body>
+<section th:with="f=${form != null ? form : null}">
+    <div class="encabezado">
+        <div>
+            <h1 th:text="${p['ID_PROPIETARIO'] == null} ? 'Nuevo propietario' : 'Editar propietario'">Propietario</h1>
+            <div class="sub"><span class="concepto" th:text="${p['ID_PROPIETARIO'] == null} ? 'PR-03 INSERT' : 'PR-04 UPDATE'"></span></div>
+        </div>
+        <a class="btn btn-light" href="javascript:history.back()"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+    </div>
+    <div class="card" style="max-width:820px">
+        <div class="card-body p-4">
+            <form method="post" th:action="@{/propietarios/guardar}" class="row g-3">
+                <input type="hidden" name="id" th:value="${p['ID_PROPIETARIO']}">
+                <div class="col-md-4">
+                    <label class="form-label">DNI <span class="text-danger">*</span></label>
+                    <input name="dni" class="form-control" required pattern="[0-9]{8,12}" maxlength="12"
+                           th:value="${f != null ? f['dni'] : p['DNI']}" title="8 a 12 digitos">
+                    <div class="form-text">8 a 12 digitos (CHECK en Oracle)</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                    <input name="nombres" class="form-control" required maxlength="60" th:value="${f != null ? f['nombres'] : p['NOMBRES']}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                    <input name="apellidos" class="form-control" required maxlength="60" th:value="${f != null ? f['apellidos'] : p['APELLIDOS']}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Telefono <span class="text-danger">*</span></label>
+                    <input name="telefono" class="form-control" required maxlength="15" th:value="${f != null ? f['telefono'] : p['TELEFONO']}">
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Email</label>
+                    <input name="email" type="email" class="form-control" maxlength="100" th:value="${f != null ? f['email'] : p['EMAIL']}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Direccion</label>
+                    <input name="direccion" class="form-control" maxlength="150" th:value="${f != null ? f['direccion'] : p['DIRECCION']}">
+                </div>
+                <div class="col-12 pt-2">
+                    <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

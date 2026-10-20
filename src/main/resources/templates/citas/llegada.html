@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Triaje - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div>
+            <h1><i class="bi bi-heart-pulse text-danger me-2"></i><span th:text="${cita != null} ? 'Llegada y triaje' : 'Paciente sin cita / emergencia'"></span></h1>
+            <div class="sub"><span class="concepto" th:text="${cita != null} ? 'PKG_CITAS.PR_REGISTRAR_LLEGADA' : 'PKG_CITAS.PR_REGISTRAR_SIN_CITA'"></span>
+                &middot; el nivel de urgencia ordena la cola de atencion</div>
+        </div>
+        <a class="btn btn-light" th:href="@{/citas}"><i class="bi bi-arrow-left me-1"></i>Agenda</a>
+    </div>
+
+    <div class="card" style="max-width:960px">
+        <div class="card-body p-4">
+            <form method="post" th:action="@{/citas/llegada}" class="row g-3">
+                <!-- Con cita -->
+                <th:block th:if="${cita != null}">
+                    <input type="hidden" name="cita" th:value="${cita.ID_CITA}">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center gap-3 p-3 rounded" style="background:#f0fdfa">
+                            <img class="avatar-especie" style="width:56px;height:56px" th:src="@{${@vista.imagen(cita.ESPECIE)}}" alt="">
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${cita.MASCOTA}"></div>
+                                <div class="text-muted small" th:text="${cita.PROPIETARIO} + ' · cita ' + ${#dates.format(cita.FECHA_HORA, 'HH:mm')} + ' con ' + ${cita.VETERINARIO}"></div>
+                                <div class="small" th:text="'Motivo: ' + ${cita.MOTIVO}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+                <!-- Sin cita -->
+                <th:block th:if="${cita == null}">
+                    <div class="col-md-6">
+                        <label class="form-label">Mascota <span class="text-danger">*</span></label>
+                        <select name="mascota" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            <option th:each="m : ${mascotas}" th:value="${m.ID_MASCOTA}" th:text="${m.ETIQUETA}"></option>
+                        </select>
+                        <div class="form-text">¿No esta registrada? <a th:href="@{/propietarios}">Registrela desde su propietario</a></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Motivo <span class="text-danger">*</span></label>
+                        <input name="motivo" class="form-control" required maxlength="200" placeholder="Ej. Atropellado, vomitos con sangre...">
+                    </div>
+                </th:block>
+
+                <div class="col-12"><hr class="my-1"><h6 class="fw-bold mt-2"><i class="bi bi-activity me-1"></i>Signos vitales</h6></div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Peso (kg) <span class="text-danger">*</span></label>
+                    <input name="peso" type="number" step="0.01" min="0.01" class="form-control" required>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Temperatura (°C) <span class="text-danger">*</span></label>
+                    <input name="temperatura" type="number" step="0.1" class="form-control" required placeholder="38.5">
+                    <div class="form-text">CHECK: entre 30 y 45</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Frec. cardiaca</label>
+                    <input name="fc" type="number" class="form-control" placeholder="lpm">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Frec. respiratoria</label>
+                    <input name="fr" type="number" class="form-control" placeholder="rpm">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-bold">Nivel de urgencia (escala Manchester) <span class="text-danger">*</span></label>
+                    <div class="selector-urgencia d-flex flex-wrap gap-2">
+                        <th:block th:each="n : ${#numbers.sequence(1, 5)}">
+                            <input type="radio" class="btn-check" name="urgencia" th:id="'u' + ${n}" th:value="${n}" th:checked="${n == 4}" required>
+                            <label class="btn" th:classappend="'u' + ${n}" th:for="'u' + ${n}">
+                                <span th:text="${n}"></span> · <span th:text="${@vista.urgencia(n)}"></span>
+                            </label>
+                        </th:block>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Observaciones del triaje</label>
+                    <textarea name="obs" class="form-control" rows="2" maxlength="300"></textarea>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary btn-lg"><i class="bi bi-arrow-right-circle me-1"></i>Enviar a la cola de atencion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Propietarios - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Propietarios</h1><div class="sub">Dueños de las mascotas atendidas &middot; <span class="concepto">PR-01</span></div></div>
+        <a class="btn btn-primary" th:href="@{/propietarios/nuevo}"><i class="bi bi-person-plus me-1"></i>Nuevo propietario</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body border-bottom">
+            <form class="row g-2" method="get">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input class="form-control" name="q" th:value="${q}" placeholder="Buscar por DNI, nombres o apellidos...">
+                    </div>
+                </div>
+                <div class="col-auto"><button class="btn btn-outline-primary">Buscar</button></div>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>DNI</th><th>Apellidos y nombres</th><th>Telefono</th><th>Email</th><th class="text-center">Mascotas</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${propietarios}">
+                    <td class="font-monospace" th:text="${p.DNI}"></td>
+                    <td><a class="fw-semibold text-decoration-none" th:href="@{/propietarios/{id}(id=${p.ID_PROPIETARIO})}"
+                           th:text="${p.APELLIDOS} + ', ' + ${p.NOMBRES}"></a></td>
+                    <td><i class="bi bi-telephone text-muted me-1"></i><span th:text="${p.TELEFONO}"></span></td>
+                    <td class="text-muted" th:text="${p.EMAIL}"></td>
+                    <td class="text-center"><span class="badge rounded-pill text-bg-light border" th:text="${p.MASCOTAS}"></span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-light" th:href="@{/propietarios/{id}(id=${p.ID_PROPIETARIO})}"><i class="bi bi-chevron-right"></i></a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(propietarios)}"><td colspan="6"><div class="vacio"><i class="bi bi-people"></i>No se encontraron propietarios</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

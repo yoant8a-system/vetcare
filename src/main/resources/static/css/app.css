@@ -1,0 +1,150 @@
+/* =====================================================================
+   VetCare - plantilla visual (sobre Bootstrap 5)
+   ===================================================================== */
+:root {
+    --vc-primario: #0d9488;
+    --vc-primario-osc: #0f766e;
+    --vc-primario-claro: #ccfbf1;
+    --vc-sidebar: #0b2e33;
+    --vc-sidebar-txt: #b7d3d1;
+    --vc-fondo: #f3f6f8;
+    --vc-borde: #e3e8ee;
+    --bs-primary: #0d9488;
+    --bs-primary-rgb: 13, 148, 136;
+    --bs-link-color: #0f766e;
+    --bs-link-hover-color: #115e59;
+}
+
+body { background: var(--vc-fondo); font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+
+.btn-primary { --bs-btn-bg: var(--vc-primario); --bs-btn-border-color: var(--vc-primario);
+    --bs-btn-hover-bg: var(--vc-primario-osc); --bs-btn-hover-border-color: var(--vc-primario-osc);
+    --bs-btn-active-bg: var(--vc-primario-osc); }
+.btn-outline-primary { --bs-btn-color: var(--vc-primario); --bs-btn-border-color: var(--vc-primario);
+    --bs-btn-hover-bg: var(--vc-primario); --bs-btn-hover-border-color: var(--vc-primario); }
+.text-primary { color: var(--vc-primario) !important; }
+.bg-primary { background-color: var(--vc-primario) !important; }
+.form-control:focus, .form-select:focus { border-color: #5eead4; box-shadow: 0 0 0 .2rem rgba(13,148,136,.2); }
+
+/* ------------------------------------------------------------ estructura */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; flex-shrink: 0; background: var(--vc-sidebar); color: var(--vc-sidebar-txt);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; transition: margin .2s; }
+.sidebar .marca { display: flex; align-items: center; gap: .7rem; padding: 1.2rem 1.25rem; color: #fff;
+    text-decoration: none; font-weight: 700; font-size: 1.25rem; letter-spacing: .3px; }
+.sidebar .marca img { width: 38px; height: 38px; }
+.sidebar .marca small { display: block; font-size: .7rem; font-weight: 400; color: var(--vc-sidebar-txt); letter-spacing: 0; }
+.sidebar .seccion { text-transform: uppercase; font-size: .68rem; letter-spacing: 1px; color: #6b9a98;
+    padding: 1rem 1.4rem .35rem; }
+.sidebar a.item { display: flex; align-items: center; gap: .75rem; color: var(--vc-sidebar-txt); text-decoration: none;
+    padding: .55rem 1.4rem; margin: 1px .6rem; border-radius: .55rem; font-size: .93rem; }
+.sidebar a.item i { font-size: 1.1rem; width: 1.2rem; text-align: center; }
+.sidebar a.item:hover { background: rgba(255,255,255,.06); color: #fff; }
+.sidebar a.item.activo { background: var(--vc-primario); color: #fff; box-shadow: 0 4px 12px rgba(13,148,136,.35); }
+.sidebar .pie { padding: 1rem 1.4rem; font-size: .75rem; color: #6b9a98; }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { background: #fff; border-bottom: 1px solid var(--vc-borde); height: 64px; display: flex; align-items: center;
+    padding: 0 1.5rem; gap: 1rem; position: sticky; top: 0; z-index: 20; }
+.topbar .titulo { font-weight: 600; font-size: 1.1rem; color: #1f2937; }
+.topbar .acciones { margin-left: auto; display: flex; align-items: center; gap: .6rem; }
+.topbar .campana { position: relative; font-size: 1.3rem; color: #475569; }
+.topbar .campana .badge { position: absolute; top: -4px; right: -8px; font-size: .62rem; }
+.avatar-usuario { width: 36px; height: 36px; border-radius: 50%; background: var(--vc-primario-claro); color: var(--vc-primario-osc);
+    display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+.contenido { padding: 1.5rem; flex: 1; }
+.btn-menu { display: none; }
+
+@media (max-width: 992px) {
+    .sidebar { position: fixed; z-index: 50; margin-left: -250px; }
+    .sidebar.abierto { margin-left: 0; }
+    .btn-menu { display: inline-block; }
+}
+
+/* ------------------------------------------------------------ componentes */
+.card { border: 1px solid var(--vc-borde); border-radius: .9rem; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+.card-header { background: #fff; border-bottom: 1px solid var(--vc-borde); font-weight: 600; padding: .85rem 1.1rem;
+    border-radius: .9rem .9rem 0 0 !important; }
+.encabezado { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.2rem; }
+.encabezado h1 { font-size: 1.45rem; font-weight: 700; margin: 0; color: #0f172a; }
+.encabezado .sub { color: #64748b; font-size: .9rem; }
+
+.card.kpi { padding: 1.1rem 1.2rem; display: flex; flex-direction: row; align-items: center; gap: 1rem; height: 100%; }
+.kpi .icono { width: 52px; height: 52px; border-radius: .8rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.kpi .valor { font-size: 1.7rem; font-weight: 700; line-height: 1; color: #0f172a; }
+.kpi .etiqueta { color: #64748b; font-size: .85rem; }
+.ic-teal { background: #ccfbf1; color: #0f766e; } .ic-azul { background: #dbeafe; color: #1d4ed8; }
+.ic-ambar { background: #fef3c7; color: #b45309; } .ic-rosa { background: #fce7f3; color: #be185d; }
+.ic-violeta { background: #ede9fe; color: #6d28d9; } .ic-rojo { background: #fee2e2; color: #b91c1c; }
+
+.table { --bs-table-hover-bg: #f0fdfa; margin-bottom: 0; }
+.table thead th { background: #f8fafc; color: #475569; font-size: .78rem; text-transform: uppercase; letter-spacing: .4px;
+    font-weight: 600; border-bottom-width: 1px; white-space: nowrap; }
+.table td { vertical-align: middle; }
+
+.avatar-especie { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+.avatar-especie.grande { width: 96px; height: 96px; }
+
+/* Estados */
+.estado { display: inline-block; padding: .22rem .6rem; border-radius: 999px; font-size: .74rem; font-weight: 600; white-space: nowrap; }
+.estado-PROGRAMADA { background: #e0f2fe; color: #0369a1; }
+.estado-EN_ESPERA { background: #fef3c7; color: #b45309; }
+.estado-EN_ATENCION { background: #ede9fe; color: #6d28d9; }
+.estado-ATENDIDA, .estado-COMPLETADO, .estado-ACTIVO, .estado-VIGENTE { background: #dcfce7; color: #15803d; }
+.estado-CANCELADA, .estado-SUSPENDIDO, .estado-VENCIDA, .estado-FALLECIDO { background: #fee2e2; color: #b91c1c; }
+.estado-NO_ASISTIO, .estado-HISTORICA, .estado-DOSIS { background: #f1f5f9; color: #64748b; }
+.estado-EN_CURSO, .estado-POR { background: #fef9c3; color: #a16207; }
+
+/* Niveles de urgencia (triaje Manchester) */
+.urg { display: inline-flex; align-items: center; gap: .35rem; padding: .22rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700; color: #fff; }
+.urg-1 { background: #dc2626; } .urg-2 { background: #ea580c; } .urg-3 { background: #ca8a04; }
+.urg-4 { background: #16a34a; } .urg-5 { background: #2563eb; }
+.selector-urgencia .btn-check + .btn { border-width: 2px; font-weight: 600; }
+.selector-urgencia .btn-check:checked + .btn { color: #fff; }
+.selector-urgencia .u1 { border-color: #dc2626; color: #dc2626; } .selector-urgencia .btn-check:checked + .u1 { background: #dc2626; }
+.selector-urgencia .u2 { border-color: #ea580c; color: #ea580c; } .selector-urgencia .btn-check:checked + .u2 { background: #ea580c; }
+.selector-urgencia .u3 { border-color: #ca8a04; color: #ca8a04; } .selector-urgencia .btn-check:checked + .u3 { background: #ca8a04; }
+.selector-urgencia .u4 { border-color: #16a34a; color: #16a34a; } .selector-urgencia .btn-check:checked + .u4 { background: #16a34a; }
+.selector-urgencia .u5 { border-color: #2563eb; color: #2563eb; } .selector-urgencia .btn-check:checked + .u5 { background: #2563eb; }
+
+.progreso { height: 8px; border-radius: 99px; background: #e2e8f0; overflow: hidden; min-width: 90px; }
+.progreso > div { height: 100%; background: linear-gradient(90deg, #14b8a6, #0d9488); }
+
+.vacio { text-align: center; color: #94a3b8; padding: 2.5rem 1rem; }
+.vacio i { font-size: 2.6rem; display: block; margin-bottom: .5rem; }
+
+.ficha-cabecera { background: linear-gradient(120deg, #0f766e, #14b8a6); color: #fff; border-radius: .9rem; padding: 1.4rem;
+    display: flex; gap: 1.3rem; align-items: center; flex-wrap: wrap; }
+.ficha-cabecera .avatar-especie { background: #fff; border: 4px solid rgba(255,255,255,.5); }
+.ficha-cabecera h2 { margin: 0; font-weight: 700; }
+.ficha-cabecera .dato { background: rgba(255,255,255,.15); border-radius: .5rem; padding: .25rem .6rem; font-size: .85rem; }
+
+.nav-tabs .nav-link { color: #475569; }
+.nav-tabs .nav-link.active { color: var(--vc-primario-osc); font-weight: 600; }
+
+.paciente-actual { border: 2px solid #a78bfa; background: linear-gradient(180deg, #f5f3ff, #fff 60%); }
+.signo { background: #fff; border: 1px solid var(--vc-borde); border-radius: .6rem; padding: .45rem .7rem; text-align: center; }
+.signo .v { font-weight: 700; font-size: 1.15rem; color: #0f172a; }
+.signo .l { font-size: .72rem; color: #64748b; text-transform: uppercase; }
+.lista-diagnosticos { max-height: 260px; overflow-y: auto; border: 1px solid var(--vc-borde); border-radius: .5rem; padding: .5rem .75rem; }
+
+.reporte-card { transition: transform .15s, box-shadow .15s; color: inherit; text-decoration: none; display: block; height: 100%; }
+.reporte-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(15,23,42,.08); color: inherit; }
+.reporte-card .icono { width: 46px; height: 46px; border-radius: .7rem; background: var(--vc-primario-claro); color: var(--vc-primario-osc);
+    display: flex; align-items: center; justify-content: center; font-size: 1.35rem; }
+.concepto { font-size: .75rem; background: #f1f5f9; color: #475569; border-radius: .4rem; padding: .15rem .45rem; font-family: Consolas, monospace; }
+
+/* Login */
+.login-fondo { min-height: 100vh; display: flex; background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); }
+.login-arte { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; }
+.login-arte img { max-width: 440px; width: 100%; }
+.login-panel { width: 440px; background: #fff; display: flex; flex-direction: column; justify-content: center; padding: 3rem; box-shadow: -10px 0 40px rgba(15,23,42,.06); }
+@media (max-width: 860px) { .login-arte { display: none; } .login-panel { width: 100%; } }
+
+/* Impresion de reportes */
+@media print {
+    .sidebar, .topbar, .no-imprimir, .alert-dismissible { display: none !important; }
+    .contenido { padding: 0; }
+    .card { border: none; box-shadow: none; }
+    body { background: #fff; }
+}

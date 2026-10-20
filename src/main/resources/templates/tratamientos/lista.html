@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Tratamientos - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Tratamientos</h1><div class="sub">TR-01 &middot; el avance lo calcula <span class="concepto">PKG_TRATAMIENTO.FN_AVANCE</span> dentro del SELECT</div></div>
+        <div class="btn-group">
+            <a th:each="e : ${ {'EN_CURSO','COMPLETADO','SUSPENDIDO','TODOS'} }" class="btn btn-outline-primary"
+               th:classappend="${estado == e} ? active" th:href="@{/tratamientos(estado=${e})}" th:text="${#strings.replace(e, '_', ' ')}"></a>
+        </div>
+    </div>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>Mascota</th><th>Tratamiento</th><th>Inicio</th><th>Frecuencia</th><th>Avance</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="t : ${tratamientos}">
+                    <td><a class="fw-semibold text-decoration-none" th:href="@{/mascotas/{id}(id=${t.ID_MASCOTA})}" th:text="${t.MASCOTA}"></a></td>
+                    <td th:text="${t.DESCRIPCION}"></td>
+                    <td th:text="${#dates.format(t.FECHA_INICIO, 'dd/MM/yyyy')}"></td>
+                    <td th:text="'cada ' + ${t.FRECUENCIA_DIAS} + ' dia(s)'"></td>
+                    <td style="min-width:170px">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progreso flex-grow-1"><div th:style="'width:' + ${t.AVANCE} + '%'"></div></div>
+                            <small class="text-muted text-nowrap" th:text="${t.REALIZADAS} + '/' + ${t.SESIONES_PROGRAMADAS}"></small>
+                        </div>
+                    </td>
+                    <td><span class="estado" th:classappend="'estado-' + ${t.ESTADO}" th:text="${t.ESTADO}"></span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-light" th:href="@{/tratamientos/{id}(id=${t.ID_TRATAMIENTO})}"><i class="bi bi-chevron-right"></i></a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(tratamientos)}"><td colspan="7"><div class="vacio"><i class="bi bi-bandaid"></i>No hay tratamientos</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

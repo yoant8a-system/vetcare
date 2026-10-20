@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>SQL pendiente - VetCare</title></head>
+<body>
+<section>
+    <div class="card mx-auto" style="max-width:720px">
+        <div class="card-body text-center p-5">
+            <div style="font-size:3.5rem" class="text-warning"><i class="bi bi-code-slash"></i></div>
+            <h1 class="h3 fw-bold">Falta implementar <span class="text-primary" th:text="'[' + ${idSql} + ']'"></span></h1>
+            <p class="text-muted">Esta pantalla necesita una sentencia SQL que el equipo todavia no escribio.</p>
+            <div class="text-start bg-light rounded p-3 small">
+                <div class="fw-semibold mb-2">Donde escribirla:</div>
+                <ol class="mb-0">
+                    <li>Busque <code th:text="${idSql}"></code> en <code>sql/consultas_app.sql</code> (ahi dice que columnas y parametros debe tener).</li>
+                    <li>Pruebela en SQL Developer (los parametros <code>:nombre</code> se piden al ejecutar).</li>
+                    <li>Peguela en la clase <code>*Repositorio.java</code>, en la constante <code th:text="${#strings.replace(idSql, '-', '_')}"></code>, entre <code>"""</code> y <code>"""</code>.</li>
+                </ol>
+            </div>
+            <a class="btn btn-outline-primary mt-4" href="javascript:history.back()"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

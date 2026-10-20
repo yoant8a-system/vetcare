@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Catalogos - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Catalogos</h1><div class="sub">CA-01 a CA-18 &middot; borrar algo en uso lo impide la FK (ORA-02292)</div></div>
+    </div>
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item" th:each="t : ${ {'especies','razas','especialidades','consultorios','diagnosticos','vacunas'} }">
+            <a class="nav-link text-capitalize" th:classappend="${tab == t} ? active" th:href="@{/admin/catalogos(tab=${t})}" th:text="${t}"></a>
+        </li>
+    </ul>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <!-- Encabezados segun el catalogo -->
+                        <thead th:switch="${tab}">
+                        <tr th:case="'especies'"><th>Especie</th><th>Razas</th><th></th></tr>
+                        <tr th:case="'razas'"><th>Especie</th><th>Raza</th><th>Mascotas</th><th></th></tr>
+                        <tr th:case="'especialidades'"><th>Especialidad</th><th>Veterinarios</th><th></th></tr>
+                        <tr th:case="'consultorios'"><th>Consultorio</th><th>Estado</th><th></th></tr>
+                        <tr th:case="'diagnosticos'"><th>Codigo</th><th>Diagnostico</th><th>Categoria</th><th>Especie</th><th></th></tr>
+                        <tr th:case="'vacunas'"><th>Especie</th><th>Vacuna</th><th>Refuerzo</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="f : ${filas}" th:switch="${tab}">
+                            <th:block th:case="'especies'"><td class="fw-semibold"><img class="avatar-especie me-2" th:src="@{${@vista.imagen(f.NOMBRE)}}" alt=""><span th:text="${f.NOMBRE}"></span></td><td th:text="${f.RAZAS}"></td></th:block>
+                            <th:block th:case="'razas'"><td th:text="${f.ESPECIE}"></td><td class="fw-semibold" th:text="${f.NOMBRE}"></td><td th:text="${f.MASCOTAS}"></td></th:block>
+                            <th:block th:case="'especialidades'"><td class="fw-semibold" th:text="${f.NOMBRE}"></td><td th:text="${f.VETERINARIOS}"></td></th:block>
+                            <th:block th:case="'consultorios'"><td class="fw-semibold" th:text="${f.NOMBRE}"></td>
+                                <td><span class="estado" th:classappend="${f.ACTIVO == 'S'} ? 'estado-ACTIVO' : 'estado-CANCELADA'" th:text="${f.ACTIVO == 'S'} ? 'Activo' : 'Inactivo'"></span></td></th:block>
+                            <th:block th:case="'diagnosticos'"><td class="font-monospace" th:text="${f.CODIGO}"></td><td th:text="${f.NOMBRE}"></td><td th:text="${f.CATEGORIA}"></td><td th:text="${f.ESPECIE}"></td></th:block>
+                            <th:block th:case="'vacunas'"><td th:text="${f.ESPECIE}"></td><td class="fw-semibold" th:text="${f.NOMBRE}"></td>
+                                <td th:text="${f.REFUERZO_DIAS != null} ? 'cada ' + ${f.REFUERZO_DIAS} + ' dias' : 'dosis unica'"></td></th:block>
+                            <td class="text-end">
+                                <form method="post" th:with="idf=${tab == 'especies' ? f.ID_ESPECIE : tab == 'razas' ? f.ID_RAZA : tab == 'especialidades' ? f.ID_ESPECIALIDAD
+                                                              : tab == 'consultorios' ? f.ID_CONSULTORIO : tab == 'diagnosticos' ? f.ID_DIAGNOSTICO : f.ID_VACUNA}"
+                                      th:action="@{/admin/catalogos/{t}/{id}/eliminar(t=${tab}, id=${idf})}"
+                                      th:attr="data-confirmar=${tab == 'consultorios'} ? '¿Activar/desactivar el consultorio?' : '¿Eliminar este registro?'">
+                                    <button class="btn btn-sm" th:classappend="${tab == 'consultorios'} ? 'btn-outline-secondary' : 'btn-outline-danger'">
+                                        <i class="bi" th:classappend="${tab == 'consultorios'} ? 'bi-toggle-on' : 'bi-trash'"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-plus-circle me-1 text-primary"></i>Agregar</div>
+                <div class="card-body">
+                    <form method="post" th:action="@{/admin/catalogos/{t}/agregar(t=${tab})}">
+                        <div class="mb-2" th:if="${tab == 'diagnosticos'}"><label class="form-label small">Codigo</label>
+                            <input name="codigo" class="form-control" required maxlength="10" placeholder="DER-005"></div>
+                        <div class="mb-2"><label class="form-label small">Nombre</label>
+                            <input name="nombre" class="form-control" required maxlength="120"></div>
+                        <div class="mb-2" th:if="${tab == 'diagnosticos'}"><label class="form-label small">Categoria</label>
+                            <input name="categoria" class="form-control" required maxlength="40"></div>
+                        <div class="mb-2" th:if="${tab == 'razas' or tab == 'diagnosticos' or tab == 'vacunas'}">
+                            <label class="form-label small">Especie</label>
+                            <select name="especie" class="form-select" th:required="${tab != 'diagnosticos'}">
+                                <option value="" th:if="${tab == 'diagnosticos'}">Todas las especies</option>
+                                <option th:each="e : ${especies}" th:value="${e.ID_ESPECIE}" th:text="${e.NOMBRE}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-2" th:if="${tab == 'vacunas'}"><label class="form-label small">Refuerzo cada (dias)</label>
+                            <input name="refuerzo" type="number" min="1" class="form-control" placeholder="vacio = dosis unica"></div>
+                        <button class="btn btn-primary w-100 mt-2">Agregar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

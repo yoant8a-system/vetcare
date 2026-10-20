@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Insumo - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1 th:text="${m['ID_MEDICAMENTO'] == null} ? 'Nuevo insumo' : 'Editar insumo'"></h1>
+            <div class="sub"><span class="concepto" th:text="${m['ID_MEDICAMENTO'] == null} ? 'IN-03 INSERT' : 'IN-04 UPDATE'"></span></div></div>
+        <a class="btn btn-light" th:href="@{/inventario}"><i class="bi bi-arrow-left me-1"></i>Inventario</a>
+    </div>
+    <div class="card" style="max-width:720px">
+        <div class="card-body p-4">
+            <form method="post" th:action="@{/inventario/guardar}" class="row g-3">
+                <input type="hidden" name="id" th:value="${m['ID_MEDICAMENTO']}">
+                <div class="col-md-6"><label class="form-label">Nombre *</label>
+                    <input name="nombre" class="form-control" required maxlength="80" th:value="${m['NOMBRE']}"></div>
+                <div class="col-md-6"><label class="form-label">Presentacion *</label>
+                    <input name="presentacion" class="form-control" required maxlength="60" th:value="${m['PRESENTACION']}" placeholder="Ej. Tableta 250 mg"></div>
+                <div class="col-md-4"><label class="form-label">Unidad *</label>
+                    <input name="unidad" class="form-control" required maxlength="15" th:value="${m['UNIDAD']}" placeholder="ml, tableta..."></div>
+                <div class="col-md-4"><label class="form-label">Stock minimo *</label>
+                    <input name="stock_minimo" type="number" step="0.01" min="0" class="form-control" required th:value="${m['STOCK_MINIMO'] ?: 0}"></div>
+                <div class="col-md-4" th:if="${m['ID_MEDICAMENTO'] != null}"><label class="form-label">Activo</label>
+                    <select name="activo" class="form-select">
+                        <option value="S" th:selected="${m['ACTIVO'] == 'S'}">Si</option>
+                        <option value="N" th:selected="${m['ACTIVO'] == 'N'}">No</option>
+                    </select></div>
+                <div class="col-12" th:if="${m['ID_MEDICAMENTO'] != null}">
+                    <div class="alert alert-info small mb-0"><i class="bi bi-info-circle me-1"></i>
+                        Stock actual: <b th:text="${m['STOCK_ACTUAL']} + ' ' + ${m['UNIDAD']}"></b>. Para cambiarlo registre un movimiento (kardex).</div>
+                </div>
+                <div class="col-12"><button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Guardar</button></div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Nueva cita - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Nueva cita</h1>
+            <div class="sub">Oracle valida horario, choques y fecha futura en <span class="concepto">PKG_CITAS.PR_PROGRAMAR</span></div></div>
+        <a class="btn btn-light" th:href="@{/citas}"><i class="bi bi-arrow-left me-1"></i>Agenda</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="post" th:action="@{/citas/nueva}" class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Mascota <span class="text-danger">*</span></label>
+                            <select name="mascota" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                <option th:each="m : ${mascotas}" th:value="${m.ID_MASCOTA}" th:text="${m.ETIQUETA}"
+                                        th:selected="${mascota != null and mascota == m.ID_MASCOTA.longValue()}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Veterinario <span class="text-danger">*</span></label>
+                            <select name="veterinario" id="vet" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                <option th:each="v : ${veterinarios}" th:value="${v.ID_VETERINARIO}" th:text="${v.NOMBRE}"
+                                        th:selected="${veterinario != null and veterinario == v.ID_VETERINARIO.longValue()}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Duracion</label>
+                            <select name="duracion" class="form-select">
+                                <option value="20">20 min</option><option value="30" selected>30 min</option>
+                                <option value="45">45 min</option><option value="60">1 hora</option><option value="90">1 h 30</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Fecha y hora <span class="text-danger">*</span></label>
+                            <input type="datetime-local" name="fecha" class="form-control" required step="900"
+                                   th:value="${#temporals.format(sugerida, 'yyyy-MM-dd''T''HH:mm')}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Motivo <span class="text-danger">*</span></label>
+                            <input name="motivo" class="form-control" required maxlength="200" placeholder="Ej. Control anual y vacunas">
+                        </div>
+                        <div class="col-12"><button class="btn btn-primary"><i class="bi bi-calendar-check me-1"></i>Programar cita</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-clock-history me-1 text-primary"></i>Horario del veterinario <span class="concepto ms-1">VE-08</span></div>
+                <div class="card-body">
+                    <p class="text-muted small" th:if="${horario == null}">Elija un veterinario para ver su horario.</p>
+                    <table class="table table-sm" th:if="${horario != null}">
+                        <tbody>
+                        <tr th:each="h : ${horario}"><td th:text="${@vista.dia(h.DIA_SEMANA)}"></td><td class="text-end" th:text="${h.HORA_INICIO} + ' - ' + ${h.HORA_FIN}"></td></tr>
+                        <tr th:if="${#lists.isEmpty(horario)}"><td class="text-muted">Sin horario registrado</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert alert-info small mb-0">
+                        <i class="bi bi-lightbulb me-1"></i>Pruebe programar fuera del horario, en el pasado o a la misma hora que otra cita:
+                        el mensaje de error viene de <code>RAISE_APPLICATION_ERROR</code> en Oracle.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('vet').addEventListener('change', e => {
+            const url = new URL(location.href);
+            url.searchParams.set('veterinario', e.target.value);
+            const m = document.querySelector('[name=mascota]').value;
+            if (m) url.searchParams.set('mascota', m);
+            location.href = url;
+        });
+    </script>
+</section>
+</body>
+</html>

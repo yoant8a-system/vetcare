@@ -1,0 +1,19 @@
+<!-- Dibuja cualquier TablaResultado (SYS_REFCURSOR): columnas y filas tal como las devolvio Oracle -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="cursor(tabla, vacio)" class="table-responsive">
+    <table class="table table-hover table-sm align-middle">
+        <thead><tr><th th:each="c : ${tabla.columnas()}" th:text="${c}"></th></tr></thead>
+        <tbody>
+        <tr th:each="f : ${tabla.filas()}">
+            <td th:each="v : ${f}" th:with="txt=${v == null ? '' : v.toString()}">
+                <span th:if="${txt == 'VENCIDA' or txt == 'ATRASADO'}" class="estado estado-VENCIDA" th:text="${txt}"></span>
+                <span th:if="${txt == 'POR VENCER'}" class="estado estado-POR" th:text="${txt}"></span>
+                <span th:if="${txt == 'AL DIA'}" class="estado estado-VIGENTE" th:text="${txt}"></span>
+                <span th:unless="${txt == 'VENCIDA' or txt == 'ATRASADO' or txt == 'POR VENCER' or txt == 'AL DIA'}"
+                      th:class="${#strings.startsWith(txt, '==') or #strings.startsWith(txt, '--')} ? 'fw-bold'" style="white-space:pre"
+                      th:text="${txt}"></span>
+            </td>
+        </tr>
+        <tr th:if="${tabla.vacia()}"><td th:colspan="${#lists.size(tabla.columnas())}"><div class="vacio"><i class="bi bi-inbox"></i><span th:text="${vacio}"></span></div></td></tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Mi consultorio - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Mi consultorio</h1><div class="sub">Cola ordenada por urgencia del triaje y hora de llegada &middot; <span class="concepto">PKG_ATENCION</span></div></div>
+        <a class="btn btn-outline-primary" th:href="@{/pantalla}" target="_blank"><i class="bi bi-tv me-1"></i>Pantalla de sala</a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <!-- ================= SIN PACIENTE: llamar al siguiente ================= -->
+            <div class="card mb-3" th:if="${paciente == null}">
+                <div class="card-body d-flex flex-wrap align-items-center gap-3 p-4">
+                    <div style="font-size:3rem" class="text-primary"><i class="bi bi-megaphone"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold fs-5">Consultorio libre</div>
+                        <div class="text-muted small">Elija su consultorio y llame al siguiente paciente. Se anunciara por voz en la pantalla de sala.</div>
+                    </div>
+                    <form method="post" th:action="@{/consultorio/llamar}" class="d-flex gap-2">
+                        <select name="consultorio" class="form-select" required>
+                            <option th:each="c : ${consultorios}" th:value="${c.ID_CONSULTORIO}" th:text="${c.NOMBRE}"></option>
+                        </select>
+                        <button class="btn btn-primary text-nowrap" th:disabled="${#lists.isEmpty(cola) or #lists.isEmpty(consultorios)}">
+                            <i class="bi bi-person-raised-hand me-1"></i>Llamar siguiente</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================= PACIENTE EN ATENCION ================= -->
+            <th:block th:if="${paciente != null}">
+                <div class="card paciente-actual mb-3">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <img class="avatar-especie" style="width:72px;height:72px" th:src="@{${@vista.imagen(paciente.ESPECIE)}}" alt="">
+                            <div class="flex-grow-1">
+                                <div class="small text-uppercase fw-semibold" style="color:#6d28d9">En atencion &middot; <span th:text="${paciente.CONSULTORIO}"></span></div>
+                                <div class="fs-3 fw-bold">
+                                    <a class="text-decoration-none text-dark" th:href="@{/mascotas/{id}(id=${paciente.ID_MASCOTA})}" th:text="${paciente.MASCOTA}"></a>
+                                    <span class="urg ms-2 align-middle" th:classappend="'urg-' + ${paciente.NIVEL_URGENCIA}" th:text="${@vista.urgencia(paciente.NIVEL_URGENCIA)}"></span>
+                                </div>
+                                <div class="text-muted" th:text="${paciente.ESPECIE} + ' · ' + ${paciente.RAZA} + ' · ' + (${paciente.SEXO} == 'M' ? 'Macho' : 'Hembra') + ' · ' + ${paciente.EDAD ?: 'edad desconocida'}"></div>
+                                <div class="small"><i class="bi bi-person me-1"></i><span th:text="${paciente.PROPIETARIO}"></span> &middot; <span th:text="${paciente.TELEFONO}"></span></div>
+                            </div>
+                            <form method="post" th:action="@{/consultorio/rellamar}">
+                                <input type="hidden" name="cita" th:value="${paciente.ID_CITA}">
+                                <button class="btn btn-outline-secondary"><i class="bi bi-volume-up me-1"></i>Volver a llamar</button>
+                            </form>
+                        </div>
+                        <div class="row g-2 mt-3">
+                            <div class="col-6 col-md-3"><div class="signo"><div class="v" th:text="${paciente.PESO_KG} + ' kg'"></div><div class="l">Peso</div></div></div>
+                            <div class="col-6 col-md-3"><div class="signo"><div class="v" th:text="${paciente.TEMPERATURA} + ' °C'"
+                                    th:classappend="${paciente.TEMPERATURA >= 39.5} ? 'text-danger'"></div><div class="l">Temperatura</div></div></div>
+                            <div class="col-6 col-md-3"><div class="signo"><div class="v" th:text="${paciente.FREC_CARDIACA ?: '-'}"></div><div class="l">Frec. cardiaca</div></div></div>
+                            <div class="col-6 col-md-3"><div class="signo"><div class="v" th:text="${paciente.FREC_RESPIRATORIA ?: '-'}"></div><div class="l">Frec. respiratoria</div></div></div>
+                        </div>
+                        <div class="mt-2 small"><b>Motivo:</b> <span th:text="${paciente.MOTIVO}"></span>
+                            <span th:if="${paciente.OBS_TRIAJE}"> &middot; <b>Triaje:</b> <span th:text="${paciente.OBS_TRIAJE}"></span></span></div>
+                    </div>
+                </div>
+
+                <!-- Formulario de atencion: una sola llamada a PKG_ATENCION.PR_REGISTRAR_ATENCION -->
+                <form method="post" th:action="@{/consultorio/registrar}" class="card mb-3">
+                    <input type="hidden" name="cita" th:value="${paciente.ID_CITA}">
+                    <div class="card-header"><i class="bi bi-clipboard2-pulse me-1 text-primary"></i>Registrar atencion
+                        <span class="concepto ms-2">todo o nada: SAVEPOINT + colecciones T_NUMEROS</span></div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Anamnesis <span class="text-danger">*</span></label>
+                            <textarea name="anamnesis" class="form-control" rows="3" required maxlength="1000" placeholder="Lo que refiere el propietario..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Examen fisico</label>
+                            <textarea name="examen" class="form-control" rows="3" maxlength="1000"></textarea>
+                        </div>
+
+                        <div class="col-md-7">
+                            <label class="form-label">Diagnosticos <span class="text-danger">*</span> <span class="concepto">AT-03</span></label>
+                            <input class="form-control form-control-sm mb-2" id="buscarDiag" placeholder="Filtrar diagnosticos...">
+                            <div class="lista-diagnosticos">
+                                <div class="d-flex align-items-center gap-2 py-1 diag" th:each="d : ${diagnosticos}">
+                                    <input class="form-check-input mt-0" type="checkbox" name="diagnostico" th:value="${d.ID_DIAGNOSTICO}" th:id="'d' + ${d.ID_DIAGNOSTICO}">
+                                    <label class="flex-grow-1 small" th:for="'d' + ${d.ID_DIAGNOSTICO}">
+                                        <span class="text-muted font-monospace" th:text="${d.CODIGO}"></span> <span th:text="${d.NOMBRE}"></span>
+                                        <span class="badge text-bg-light border" th:text="${d.CATEGORIA}"></span>
+                                    </label>
+                                    <div class="form-check form-switch mb-0" title="Definitivo (si no, presuntivo)">
+                                        <input class="form-check-input" type="checkbox" name="definitivo" th:value="${d.ID_DIAGNOSTICO}">
+                                        <small class="text-muted">def.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Insumos utilizados <span class="concepto">AT-04</span></label>
+                            <div id="insumos"></div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="agregarInsumo"><i class="bi bi-plus-lg me-1"></i>Agregar insumo</button>
+                            <div class="form-text">Cada salida la descuenta el trigger del kardex. Si falta stock, no se guarda nada.</div>
+                            <template id="filaInsumo">
+                                <div class="input-group input-group-sm mb-2">
+                                    <select name="medicamento" class="form-select">
+                                        <option th:each="md : ${medicamentos}" th:value="${md.ID_MEDICAMENTO}"
+                                                th:text="${md.NOMBRE} + ' ' + ${md.PRESENTACION} + ' (' + ${md.STOCK_ACTUAL} + ' ' + ${md.UNIDAD} + ')'"></option>
+                                    </select>
+                                    <input name="cantidad" type="number" step="0.01" min="0.01" class="form-control" style="max-width:90px" placeholder="Cant.">
+                                    <button type="button" class="btn btn-outline-danger quitar"><i class="bi bi-x"></i></button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="col-12"><div class="p-3 rounded" style="background:#f8fafc">
+                            <div class="fw-semibold mb-2"><i class="bi bi-bandaid me-1"></i>Tratamiento (opcional)</div>
+                            <div class="row g-2">
+                                <div class="col-md-6"><input name="tratamiento" class="form-control" maxlength="300" placeholder="Ej. Antibioticoterapia con amoxicilina"></div>
+                                <div class="col-6 col-md-3"><div class="input-group"><input name="sesiones" type="number" min="1" max="100" class="form-control" placeholder="Sesiones"><span class="input-group-text">ses.</span></div></div>
+                                <div class="col-6 col-md-3"><div class="input-group"><span class="input-group-text">cada</span><input name="frecuencia" type="number" min="1" max="90" class="form-control" placeholder="1"><span class="input-group-text">dias</span></div></div>
+                            </div>
+                        </div></div>
+
+                        <div class="col-12">
+                            <label class="form-label">Indicaciones para el propietario</label>
+                            <textarea name="indicaciones" class="form-control" rows="2" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary btn-lg"><i class="bi bi-check2-circle me-1"></i>Finalizar atencion</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="card mb-3">
+                    <div class="card-header"><i class="bi bi-journal-medical me-1 text-primary"></i>Historia clinica de <span th:text="${paciente.MASCOTA}"></span></div>
+                    <div style="max-height:420px;overflow:auto">
+                        <div th:replace="~{fragments/tabla :: cursor(${historia}, 'Primera atencion de esta mascota')}"></div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- ================= COLA ================= -->
+        <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between">
+                    <span><i class="bi bi-people me-1 text-primary"></i>Sala de espera</span>
+                    <span class="badge text-bg-primary rounded-pill" th:text="${#lists.size(cola)}"></span>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex align-items-center gap-2" th:each="c, it : ${cola}">
+                        <span class="fw-bold text-muted" style="width:1.4rem" th:text="${it.count}"></span>
+                        <img class="avatar-especie" th:src="@{${@vista.imagen(c.ESPECIE)}}" alt="">
+                        <div class="flex-grow-1 small">
+                            <div class="fw-semibold" th:text="${c.MASCOTA}"></div>
+                            <div class="text-muted" th:text="${c.MOTIVO}"></div>
+                            <div class="text-muted"><i class="bi bi-clock"></i> <span th:text="${c.MINUTOS_ESPERA} + ' min'"></span>
+                                <span th:if="${c.VETERINARIO}" th:text="' · para ' + ${c.VETERINARIO}"></span></div>
+                        </div>
+                        <span class="urg" th:classappend="'urg-' + ${c.NIVEL_URGENCIA}" th:text="${c.NIVEL_URGENCIA}" th:title="${c.URGENCIA}"></span>
+                    </div>
+                    <div class="vacio" th:if="${#lists.isEmpty(cola)}"><i class="bi bi-cup-hot"></i>No hay pacientes esperando</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><i class="bi bi-check2-all me-1 text-primary"></i>Atendidos hoy <span class="concepto ms-1">AT-06</span></div>
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action small d-flex justify-content-between" th:each="a : ${atendidos}"
+                       th:href="@{/mascotas/{id}(id=${a.ID_MASCOTA})}">
+                        <span><b th:text="${a.MASCOTA}"></b> <span class="text-muted" th:text="${#dates.format(a.FECHA_INICIO, 'HH:mm')}"></span></span>
+                        <span class="text-muted" th:text="${a.MINUTOS} + ' min'"></span>
+                    </a>
+                    <div class="vacio py-3" th:if="${#lists.isEmpty(atendidos)}">Aun ninguno</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cont = document.getElementById('insumos');
+        const plantilla = document.getElementById('filaInsumo');
+        const boton = document.getElementById('agregarInsumo');
+        if (boton) {
+            boton.addEventListener('click', () => cont.appendChild(plantilla.content.cloneNode(true)));
+            cont.addEventListener('click', e => { if (e.target.closest('.quitar')) e.target.closest('.input-group').remove(); });
+        }
+        const buscar = document.getElementById('buscarDiag');
+        if (buscar) {
+            buscar.addEventListener('input', () => {
+                const t = buscar.value.toLowerCase();
+                document.querySelectorAll('.diag').forEach(d => d.style.display = d.textContent.toLowerCase().includes(t) ? '' : 'none');
+            });
+        }
+    </script>
+</section>
+</body>
+</html>

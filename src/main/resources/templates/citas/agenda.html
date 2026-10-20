@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Agenda de citas - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Agenda de citas</h1><div class="sub">CI-01 · VW_CITA_DETALLE · las acciones llaman a <span class="concepto">PKG_CITAS</span></div></div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/citas/llegada}"><i class="bi bi-heart-pulse me-1"></i>Paciente sin cita</a>
+            <a class="btn btn-primary" th:if="${u.tieneRol('ADMIN','RECEPCION')}" th:href="@{/citas/nueva}"><i class="bi bi-calendar-plus me-1"></i>Nueva cita</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body border-bottom">
+            <form class="row g-2 align-items-center" method="get">
+                <div class="col-auto">
+                    <a class="btn btn-light" th:href="@{/citas(fecha=${fecha.minusDays(1)}, veterinario=${veterinario})}"><i class="bi bi-chevron-left"></i></a>
+                </div>
+                <div class="col-auto"><input type="date" name="fecha" class="form-control" th:value="${fecha}" onchange="this.form.submit()"></div>
+                <div class="col-auto">
+                    <a class="btn btn-light" th:href="@{/citas(fecha=${fecha.plusDays(1)}, veterinario=${veterinario})}"><i class="bi bi-chevron-right"></i></a>
+                </div>
+                <div class="col-auto"><a class="btn btn-link" th:href="@{/citas}">Hoy</a></div>
+                <div class="col-md-3">
+                    <select name="veterinario" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos los veterinarios</option>
+                        <option th:each="v : ${veterinarios}" th:value="${v.ID_VETERINARIO}" th:text="${v.NOMBRE}"
+                                th:selected="${veterinario != null and veterinario == v.ID_VETERINARIO.longValue()}"></option>
+                    </select>
+                </div>
+                <div class="col text-end text-muted small"><span th:text="${#lists.size(citas)}"></span> citas</div>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>Hora</th><th>Mascota</th><th>Propietario</th><th>Veterinario</th><th>Motivo</th><th>Triaje</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${citas}">
+                    <td class="fw-semibold"><span th:text="${#dates.format(c.FECHA_HORA, 'HH:mm')}"></span>
+                        <div class="small text-muted" th:text="${c.DURACION_MIN} + ' min'"></div></td>
+                    <td><a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/mascotas/{id}(id=${c.ID_MASCOTA})}">
+                        <img class="avatar-especie" th:src="@{${@vista.imagen(c.ESPECIE)}}" alt=""><span th:text="${c.MASCOTA}"></span></a></td>
+                    <td><span th:text="${c.PROPIETARIO}"></span><div class="small text-muted" th:text="${c.TELEFONO}"></div></td>
+                    <td><span th:text="${c.VETERINARIO ?: '(al llamar)'}"></span><div class="small text-muted" th:text="${c.CONSULTORIO}"></div></td>
+                    <td><span th:text="${c.MOTIVO}"></span>
+                        <span class="badge text-bg-warning ms-1" th:if="${c.ORIGEN == 'SIN_CITA'}">sin cita</span></td>
+                    <td><span th:if="${c.NIVEL_URGENCIA}" class="urg" th:classappend="'urg-' + ${c.NIVEL_URGENCIA}"
+                              th:text="${@vista.urgencia(c.NIVEL_URGENCIA)}"></span></td>
+                    <td><span class="estado" th:classappend="'estado-' + ${c.ESTADO}" th:text="${c.ESTADO}"></span></td>
+                    <td class="text-end text-nowrap">
+                        <th:block th:if="${c.ESTADO == 'PROGRAMADA'}">
+                            <a class="btn btn-sm btn-primary" th:if="${esHoy}" th:href="@{/citas/llegada/{id}(id=${c.ID_CITA})}" title="Registrar llegada + triaje">
+                                <i class="bi bi-door-open me-1"></i>Llego</a>
+                            <form class="d-inline" method="post" th:action="@{/citas/{id}/cancelar(id=${c.ID_CITA})}" data-confirmar="¿Cancelar esta cita?">
+                                <input type="hidden" name="volver" th:value="'/citas?fecha=' + ${fecha}">
+                                <button class="btn btn-sm btn-outline-danger" title="Cancelar (PKG_CITAS.PR_CANCELAR)"><i class="bi bi-x-lg"></i></button>
+                            </form>
+                        </th:block>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(citas)}"><td colspan="8"><div class="vacio"><i class="bi bi-calendar2"></i>No hay citas este dia</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Inventario - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Inventario de insumos</h1>
+            <div class="sub">El stock NO se edita: cada movimiento lo actualiza el trigger <span class="concepto">TRG_MOVIMIENTO_STOCK</span></div></div>
+        <a class="btn btn-primary" th:if="${u.esAdmin()}" th:href="@{/inventario/nuevo}"><i class="bi bi-plus-lg me-1"></i>Nuevo insumo</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header">Medicamentos e insumos <span class="concepto ms-1">IN-01</span></div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Insumo</th><th>Presentacion</th><th class="text-end">Stock</th><th class="text-end">Minimo</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="m : ${medicamentos}" th:classappend="${m.ACTIVO == 'N'} ? 'text-muted'">
+                            <td>
+                                <span class="fw-semibold" th:text="${m.NOMBRE}"></span>
+                                <span class="badge text-bg-danger ms-1" th:if="${m.BAJO == 'S' and m.ACTIVO == 'S'}"><i class="bi bi-exclamation-triangle"></i> stock bajo</span>
+                                <span class="badge text-bg-secondary ms-1" th:if="${m.ACTIVO == 'N'}">inactivo</span>
+                            </td>
+                            <td th:text="${m.PRESENTACION}"></td>
+                            <td class="text-end fw-bold" th:classappend="${m.BAJO == 'S'} ? 'text-danger'" th:text="${m.STOCK_ACTUAL} + ' ' + ${m.UNIDAD}"></td>
+                            <td class="text-end text-muted" th:text="${m.STOCK_MINIMO}"></td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-light" title="Kardex (reporte PL/SQL)" th:href="@{/reportes/kardex(medicamento=${m.ID_MEDICAMENTO})}"><i class="bi bi-list-columns"></i></a>
+                                <a class="btn btn-sm btn-light" th:if="${u.esAdmin()}" th:href="@{/inventario/{id}/editar(id=${m.ID_MEDICAMENTO})}"><i class="bi bi-pencil"></i></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-arrow-left-right me-1 text-primary"></i>Registrar movimiento <span class="concepto ms-1">IN-05</span></div>
+                <div class="card-body">
+                    <form method="post" th:action="@{/inventario/movimiento}">
+                        <select name="medicamento" class="form-select mb-2" required>
+                            <option th:each="m : ${medicamentos}" th:if="${m.ACTIVO == 'S'}" th:value="${m.ID_MEDICAMENTO}"
+                                    th:text="${m.NOMBRE} + ' - ' + ${m.PRESENTACION}"></option>
+                        </select>
+                        <div class="btn-group w-100 mb-2">
+                            <input type="radio" class="btn-check" name="tipo" id="tE" value="ENTRADA" checked>
+                            <label class="btn btn-outline-success" for="tE"><i class="bi bi-box-arrow-in-down"></i> Entrada</label>
+                            <input type="radio" class="btn-check" name="tipo" id="tS" value="SALIDA">
+                            <label class="btn btn-outline-danger" for="tS"><i class="bi bi-box-arrow-up"></i> Salida</label>
+                        </div>
+                        <input name="cantidad" type="number" step="0.01" min="0.01" class="form-control mb-2" placeholder="Cantidad" required>
+                        <input name="motivo" class="form-control mb-2" maxlength="150" placeholder="Motivo (compra, merma, vencimiento...)">
+                        <button class="btn btn-primary w-100">Registrar</button>
+                        <div class="form-text">Pruebe una SALIDA mayor al stock: el trigger la rechaza (ORA-20030).</div>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Ultimos movimientos <span class="concepto ms-1">IN-06</span></div>
+                <ul class="list-group list-group-flush small" style="max-height:420px;overflow:auto">
+                    <li class="list-group-item d-flex gap-2" th:each="mv : ${movimientos}">
+                        <i class="bi fs-5" th:classappend="${mv.TIPO == 'ENTRADA'} ? 'bi-arrow-down-circle text-success' : 'bi-arrow-up-circle text-danger'"></i>
+                        <div class="flex-grow-1">
+                            <div><b th:text="${mv.MEDICAMENTO}"></b> <span th:text="(${mv.TIPO} == 'ENTRADA' ? '+' : '-') + ${mv.CANTIDAD} + ' ' + ${mv.UNIDAD}"></span></div>
+                            <div class="text-muted" th:text="${#dates.format(mv.FECHA, 'dd/MM HH:mm')} + ' · ' + ${mv.DETALLE ?: ''}"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Reportes PL/SQL - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div><h1>Reportes</h1>
+            <div class="sub">Cada reporte es una funcion de <span class="concepto">PKG_REPORTES</span> que devuelve un <span class="concepto">SYS_REFCURSOR</span>.
+                La aplicacion no contiene el SQL: solo pinta las columnas que Oracle devuelve.</div></div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-4" th:each="r : ${reportes}">
+            <a class="card reporte-card" th:href="@{/reportes/{c}(c=${r.codigo()})}">
+                <div class="card-body">
+                    <div class="d-flex gap-3">
+                        <div class="icono"><i class="bi" th:classappend="${r.icono()}"></i></div>
+                        <div>
+                            <div class="fw-bold" th:text="${r.titulo()}"></div>
+                            <div class="small text-muted mb-2" th:text="${r.descripcion()}"></div>
+                            <span class="concepto" th:text="${r.conceptoOracle()}"></span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

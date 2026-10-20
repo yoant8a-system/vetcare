@@ -1,0 +1,13 @@
+# Copia este archivo como "db.properties" (en esta misma carpeta config/) y pon tus datos.
+# db.properties NO se sube a GitHub (esta en .gitignore).
+
+# Oracle XE 21c en esta laptop. El servicio de la base "enchufable" (PDB) es XEPDB1.
+# Si la BD esta en la laptop de un compañero, cambia localhost por su IP (ej. 192.168.1.50)
+db.url=jdbc:oracle:thin:@localhost:1521/XEPDB1
+db.usuario=VETERINARIA
+db.password=cambiar_esto
+
+# true  = las consultas que el equipo aun no escribio se toman de
+#         soluciones/etapa3_logica/consultas_app.sql (sirve para probar el sistema completo ya).
+# false = modo plantilla: cada pantalla sin SQL muestra "Falta implementar [ID]".
+app.completar_con_solucion=false

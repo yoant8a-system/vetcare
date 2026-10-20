@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sala de espera - VetCare</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo.svg}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css}">
+    <style>
+        :root { --fondo: #06232a; --panel: #0d3b44; --acento: #facc15; --texto: #fff; --suave: #8fb5b9; }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; background: var(--fondo); color: var(--texto);
+            font-family: "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+        .pantalla { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; padding: 2vh 2.5vw; gap: 2vh; }
+        header { display: flex; align-items: center; gap: 1rem; }
+        header img { width: 6vh; height: 6vh; }
+        header .nombre { font-size: 3.4vh; font-weight: 700; }
+        header .nombre small { display: block; font-size: 1.8vh; color: var(--suave); font-weight: 400; }
+        header .reloj { margin-left: auto; font-size: 5vh; font-weight: 300; color: var(--suave); font-variant-numeric: tabular-nums; }
+        header .voz { font-size: 1.8vh; color: var(--suave); margin-right: 1.5rem; cursor: pointer; }
+        .cuerpo { display: grid; grid-template-columns: 1.45fr 1fr; gap: 2.5vw; min-height: 0; }
+        .anuncio { background: var(--panel); border-radius: 3vh; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 3vh; position: relative; transition: background .4s; }
+        .anuncio.llamando { animation: parpadeo 1s ease-in-out 3; border: .6vh solid var(--acento); }
+        @keyframes parpadeo { 50% { background: var(--acento); color: #06232a; } }
+        .anuncio .etiqueta { font-size: 3.4vh; letter-spacing: .4vh; color: var(--suave); text-transform: uppercase; }
+        .anuncio.llamando .etiqueta { color: inherit; }
+        .anuncio .mascota { font-size: 13vh; font-weight: 800; line-height: 1.05; margin: 2vh 0 1vh; }
+        .anuncio .apellido { font-size: 3.6vh; color: var(--suave); }
+        .anuncio.llamando .apellido { color: inherit; opacity: .8; }
+        .anuncio .destino { font-size: 6.5vh; font-weight: 700; color: var(--acento); margin-top: 3vh; }
+        .anuncio.llamando .destino { color: inherit; }
+        .anuncio .pop { animation: pop .55s cubic-bezier(.34, 1.56, .64, 1); }
+        @keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .lado { display: flex; flex-direction: column; gap: 2vh; min-height: 0; }
+        .titulo-lado { font-size: 2.2vh; letter-spacing: .3vh; text-transform: uppercase; color: var(--suave); }
+        .llamado { display: flex; align-items: center; gap: 1.5vh; background: var(--panel); border-radius: 1.6vh; padding: 1.6vh 2vh;
+            animation: entra .6s ease-out; }
+        @keyframes entra { from { transform: translateX(6vw); opacity: 0; } }
+        .llamado .m { font-size: 3.4vh; font-weight: 700; flex: 1; }
+        .llamado .c { font-size: 2.6vh; color: var(--acento); font-weight: 600; }
+        .espera { background: var(--panel); border-radius: 1.6vh; padding: 2vh; flex: 1; min-height: 0; overflow: hidden; }
+        .ficha { display: inline-flex; align-items: center; gap: .8vh; margin: .6vh; padding: 1vh 1.6vh; border-radius: 1vh;
+            background: rgba(255,255,255,.08); font-size: 2.6vh; font-weight: 600; }
+        .punto { width: 1.6vh; height: 1.6vh; border-radius: 50%; display: inline-block; }
+        .u1 { background: #ef4444; } .u2 { background: #f97316; } .u3 { background: #eab308; } .u4 { background: #22c55e; } .u5 { background: #3b82f6; }
+        footer { display: flex; justify-content: space-between; align-items: center; color: var(--suave); font-size: 2vh; }
+        .activar { position: fixed; inset: 0; background: rgba(6,35,42,.92); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 2vh; z-index: 10; cursor: pointer; text-align: center; }
+        .activar .btn { background: var(--acento); color: #06232a; border-radius: 99px; padding: 2vh 5vh; font-size: 3vh; font-weight: 700; }
+        .vacio { color: var(--suave); font-size: 3vh; }
+    </style>
+</head>
+<body>
+<div class="activar" id="activar">
+    <img th:src="@{/img/logo.svg}" style="width:14vh" alt="">
+    <div style="font-size:4vh;font-weight:700">Pantalla de sala de espera</div>
+    <div style="color:var(--suave);font-size:2.2vh">El navegador necesita un clic para permitir el sonido</div>
+    <span class="btn"><i class="bi bi-volume-up"></i> Activar pantalla y voz</span>
+</div>
+
+<div class="pantalla">
+    <header>
+        <img th:src="@{/img/logo.svg}" alt="">
+        <div class="nombre">VetCare<small>Clinica Veterinaria</small></div>
+        <span class="voz" id="voz" title="Tecla M"><i class="bi bi-volume-up"></i> Voz activada (M)</span>
+        <div class="reloj" id="reloj">--:--</div>
+    </header>
+
+    <div class="cuerpo">
+        <div class="anuncio" id="anuncio">
+            <div class="etiqueta" id="etiqueta">Esperando llamados</div>
+            <div class="mascota" id="mascota"><i class="bi bi-heart-pulse"></i></div>
+            <div class="apellido" id="apellido"></div>
+            <div class="destino" id="destino"></div>
+        </div>
+        <div class="lado">
+            <div class="titulo-lado">Llamados recientes</div>
+            <div id="recientes"></div>
+            <div class="titulo-lado">Proximos en sala</div>
+            <div class="espera" id="proximos"></div>
+        </div>
+    </div>
+
+    <footer>
+        <span><span class="punto u1"></span> Emergencia &nbsp; <span class="punto u2"></span> Muy urgente &nbsp;
+              <span class="punto u3"></span> Urgente &nbsp; <span class="punto u4"></span> Poco urgente &nbsp; <span class="punto u5"></span> No urgente</span>
+        <span id="total">En espera: 0</span>
+    </footer>
+</div>
+
+<script th:inline="javascript">
+    const API = /*[[@{/api/pantalla}]]*/ '/api/pantalla';
+    const vistos = new Map();      // idCita -> fecha de llamado ya anunciada
+    const cola = [];               // anuncios pendientes
+    let anunciando = false, primeraCarga = true, vozActiva = true, audio;
+
+    // ---------------------------------------------------------------- reloj
+    setInterval(() => document.getElementById('reloj').textContent =
+        new Date().toLocaleTimeString('es-PE', {hour: '2-digit', minute: '2-digit'}), 1000);
+
+    // ---------------------------------------------------------------- sonido
+    function campana() {
+        audio = audio || new AudioContext();
+        [ [987.8, 0], [784, .45] ].forEach(([f, t]) => {
+            const o = audio.createOscillator(), g = audio.createGain();
+            o.frequency.value = f; o.type = 'sine';
+            g.gain.setValueAtTime(.0001, audio.currentTime + t);
+            g.gain.exponentialRampToValueAtTime(.5, audio.currentTime + t + .02);
+            g.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + t + .9);
+            o.connect(g).connect(audio.destination);
+            o.start(audio.currentTime + t); o.stop(audio.currentTime + t + 1);
+        });
+        return new Promise(r => setTimeout(r, 1300));
+    }
+
+    function hablar(texto) {
+        return new Promise(resolve => {
+            if (!vozActiva || !window.speechSynthesis) return resolve();
+            const u = new SpeechSynthesisUtterance(texto);
+            const voces = speechSynthesis.getVoices();
+            u.voice = voces.find(v => v.lang === 'es-MX') || voces.find(v => v.lang.startsWith('es')) || null;
+            u.lang = u.voice ? u.voice.lang : 'es-MX';
+            u.rate = .92;
+            u.onend = resolve; u.onerror = resolve;
+            speechSynthesis.speak(u);
+        });
+    }
+
+    // ---------------------------------------------------------------- anuncios
+    async function procesarCola() {
+        if (anunciando || !cola.length) return;
+        anunciando = true;
+        const ll = cola.shift();
+        mostrar(ll, true);
+        await campana();
+        const frase = `${ll.MASCOTA}, familia ${ll.APELLIDO}. Por favor, pase al ${ll.CONSULTORIO}.`;
+        await hablar(frase);
+        await new Promise(r => setTimeout(r, 2500));
+        document.getElementById('anuncio').classList.remove('llamando');
+        document.getElementById('etiqueta').textContent = 'Ultimo llamado';
+        anunciando = false;
+        procesarCola();
+    }
+
+    function mostrar(ll, llamando) {
+        const a = document.getElementById('anuncio');
+        a.classList.remove('llamando'); void a.offsetWidth;
+        if (llamando) a.classList.add('llamando');
+        document.getElementById('etiqueta').textContent = llamando ? '¡Llamando!' : 'Ultimo llamado';
+        const m = document.getElementById('mascota');
+        m.textContent = ll.MASCOTA;
+        m.classList.remove('pop'); void m.offsetWidth; m.classList.add('pop');
+        document.getElementById('apellido').textContent = 'Familia ' + ll.APELLIDO;
+        document.getElementById('destino').innerHTML = '<i class="bi bi-arrow-right-circle"></i> ' + ll.CONSULTORIO;
+    }
+
+    // ---------------------------------------------------------------- datos
+    async function refrescar() {
+        try {
+            const d = await (await fetch(API)).json();
+            if (d.error) { document.getElementById('total').textContent = d.error; return; }
+
+            const recientes = document.getElementById('recientes');
+            recientes.innerHTML = d.llamados.slice(1, 5).map(l =>
+                `<div class="llamado"><span class="punto u${l.NIVEL_URGENCIA}"></span><span class="m">${l.MASCOTA}</span>
+                 <span class="c"><i class="bi bi-arrow-right"></i> ${l.CONSULTORIO}</span></div>`).join('')
+                || '<div class="vacio">—</div>';
+
+            document.getElementById('proximos').innerHTML = d.proximos.map(p =>
+                `<span class="ficha"><span class="punto u${p.NIVEL_URGENCIA}"></span>${p.MASCOTA}</span>`).join('')
+                || '<div class="vacio">Nadie en espera</div>';
+            document.getElementById('total').textContent = 'En espera: ' + d.enEspera;
+
+            // Llamados nuevos o "volver a llamar" (cambia FECHA_LLAMADO) -> a la cola de anuncios
+            [...d.llamados].reverse().forEach(l => {
+                if (vistos.get(l.ID_CITA) !== l.FECHA_LLAMADO) {
+                    if (!primeraCarga) cola.push(l);
+                    vistos.set(l.ID_CITA, l.FECHA_LLAMADO);
+                }
+            });
+            if (primeraCarga && d.llamados.length) mostrar(d.llamados[0], false);
+            primeraCarga = false;
+            procesarCola();
+        } catch (e) {
+            document.getElementById('total').textContent = 'Sin conexion con el servidor';
+        }
+    }
+
+    document.getElementById('activar').addEventListener('click', e => {
+        e.currentTarget.remove();
+        audio = new AudioContext();
+        speechSynthesis.getVoices();
+        refrescar();
+        setInterval(refrescar, 3000);
+    });
+    function alternarVoz() {
+        vozActiva = !vozActiva;
+        document.getElementById('voz').innerHTML = vozActiva
+            ? '<i class="bi bi-volume-up"></i> Voz activada (M)' : '<i class="bi bi-volume-mute"></i> Voz desactivada (M)';
+    }
+    document.getElementById('voz').addEventListener('click', alternarVoz);
+    document.addEventListener('keydown', e => { if (e.key.toLowerCase() === 'm') alternarVoz(); });
+    document.addEventListener('dblclick', () => document.documentElement.requestFullscreen?.());
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Mascota - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div>
+            <h1 th:text="${m['ID_MASCOTA'] == null} ? 'Nueva mascota' : 'Editar ' + ${m['NOMBRE']}">Mascota</h1>
+            <div class="sub"><span class="concepto" th:text="${m['ID_MASCOTA'] == null} ? 'MA-04 INSERT' : 'MA-05 UPDATE'"></span>
+                &middot; los padres los valida el trigger compuesto <span class="concepto">TRG_MASCOTA_PADRES</span></div>
+        </div>
+        <a class="btn btn-light" href="javascript:history.back()"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+    </div>
+    <div class="card" style="max-width:900px">
+        <div class="card-body p-4">
+            <form method="post" th:action="@{/mascotas/guardar}" class="row g-3">
+                <input type="hidden" name="id" th:value="${m['ID_MASCOTA']}">
+                <input type="hidden" name="id_propietario" th:value="${m['ID_PROPIETARIO']}">
+                <div class="col-md-5">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input name="nombre" class="form-control" required maxlength="40" th:value="${m['NOMBRE']}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Raza <span class="text-danger">*</span></label>
+                    <select name="id_raza" id="raza" class="form-select" required>
+                        <option value="">Seleccione...</option>
+                        <th:block th:each="r, it : ${razas}">
+                            <optgroup th:if="${it.first or razas[it.index - 1].ID_ESPECIE != r.ID_ESPECIE}" th:label="${r.ESPECIE}"></optgroup>
+                            <option th:value="${r.ID_RAZA}" th:data-especie="${r.ID_ESPECIE}" th:text="${r.ESPECIE + ' - ' + r.NOMBRE}"
+                                    th:selected="${m['ID_RAZA'] != null and m['ID_RAZA'] == r.ID_RAZA}"></option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sexo <span class="text-danger">*</span></label>
+                    <select name="sexo" class="form-select" required>
+                        <option value="M" th:selected="${m['SEXO'] == 'M'}">Macho</option>
+                        <option value="H" th:selected="${m['SEXO'] == 'H'}">Hembra</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha de nacimiento</label>
+                    <input type="date" name="fecha_nacimiento" class="form-control"
+                           th:value="${m['FECHA_NACIMIENTO'] != null ? #dates.format(m['FECHA_NACIMIENTO'], 'yyyy-MM-dd') : ''}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Color</label>
+                    <input name="color" class="form-control" maxlength="40" th:value="${m['COLOR']}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Esterilizado</label>
+                    <select name="esterilizado" class="form-select">
+                        <option value="N" th:selected="${m['ESTERILIZADO'] != 'S'}">No</option>
+                        <option value="S" th:selected="${m['ESTERILIZADO'] == 'S'}">Si</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label"><i class="bi bi-gender-male text-primary"></i> Padre</label>
+                    <select name="id_padre" class="form-select padres" data-sexo="M">
+                        <option value="">(desconocido)</option>
+                        <option th:each="c : ${candidatos}" th:value="${c.ID_MASCOTA}" th:data-especie="${c.ID_ESPECIE}" th:data-sexo="${c.SEXO}"
+                                th:text="${c.ETIQUETA}" th:selected="${m['ID_PADRE'] != null and m['ID_PADRE'] == c.ID_MASCOTA}"></option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label"><i class="bi bi-gender-female text-danger"></i> Madre</label>
+                    <select name="id_madre" class="form-select padres" data-sexo="H">
+                        <option value="">(desconocida)</option>
+                        <option th:each="c : ${candidatos}" th:value="${c.ID_MASCOTA}" th:data-especie="${c.ID_ESPECIE}" th:data-sexo="${c.SEXO}"
+                                th:text="${c.ETIQUETA}" th:selected="${m['ID_MADRE'] != null and m['ID_MADRE'] == c.ID_MASCOTA}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2" th:if="${m['ID_MASCOTA'] != null}">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="ACTIVO" th:selected="${m['ESTADO'] == 'ACTIVO'}">Activo</option>
+                        <option value="FALLECIDO" th:selected="${m['ESTADO'] == 'FALLECIDO'}">Fallecido</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="filtrar" checked>
+                        <label class="form-check-label small text-muted" for="filtrar">
+                            Mostrar solo padres de la misma especie y sexo correcto (desmarque para probar que Oracle lo rechaza)
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12 pt-1">
+                    <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Filtra padre/madre por la especie de la raza elegida y por sexo
+        const raza = document.getElementById('raza');
+        const filtrar = document.getElementById('filtrar');
+        function filtrarPadres() {
+            const esp = raza.selectedOptions[0]?.dataset.especie;
+            document.querySelectorAll('select.padres').forEach(sel => {
+                [...sel.options].forEach(o => {
+                    if (!o.value) return;
+                    const ok = !filtrar.checked || (o.dataset.especie === esp && o.dataset.sexo === sel.dataset.sexo);
+                    o.hidden = !ok;
+                    if (!ok && o.selected) sel.value = '';
+                });
+            });
+        }
+        raza.addEventListener('change', filtrarPadres);
+        filtrar.addEventListener('change', filtrarPadres);
+        filtrarPadres();
+    </script>
+</section>
+</body>
+</html>

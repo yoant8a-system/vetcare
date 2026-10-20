@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: pagina(~{::title}, ~{::section})}">
+<head><title>Reporte - VetCare</title></head>
+<body>
+<section>
+    <div class="encabezado">
+        <div>
+            <h1><i class="bi me-2 text-primary" th:classappend="${r.icono()}"></i><span th:text="${r.titulo()}"></span></h1>
+            <div class="sub"><span class="concepto" th:text="${r.funcion()}"></span> &middot; <span th:text="${r.conceptoOracle()}"></span></div>
+        </div>
+        <div class="d-flex gap-2 no-imprimir">
+            <a class="btn btn-light" th:href="@{/reportes}"><i class="bi bi-arrow-left me-1"></i>Reportes</a>
+            <button class="btn btn-primary" onclick="window.print()" th:if="${tabla}"><i class="bi bi-printer me-1"></i>Imprimir / PDF</button>
+        </div>
+    </div>
+
+    <div class="card mb-3 no-imprimir" th:if="${!#lists.isEmpty(r.params())}">
+        <div class="card-body">
+            <form class="row g-2 align-items-end" method="get">
+                <div class="col-md-3" th:each="p : ${r.params()}" th:switch="${p.tipo().name()}">
+                    <label class="form-label small" th:text="${p.etiqueta()}"></label>
+                    <input th:case="'FECHA'" type="date" class="form-control" th:name="${p.nombre()}" th:value="${valores[p.nombre()]}">
+                    <input th:case="'NUMERO'" type="number" class="form-control" th:name="${p.nombre()}" th:value="${valores[p.nombre()]}">
+                    <select th:case="'MASCOTA'" class="form-select" th:name="${p.nombre()}" required>
+                        <option value="">Seleccione...</option>
+                        <option th:each="m : ${mascotas}" th:value="${m.ID_MASCOTA}" th:text="${m.ETIQUETA}"
+                                th:selected="${valores[p.nombre()] == m.ID_MASCOTA.toString()}"></option>
+                    </select>
+                    <select th:case="'MEDICAMENTO'" class="form-select" th:name="${p.nombre()}" required>
+                        <option value="">Seleccione...</option>
+                        <option th:each="m : ${medicamentos}" th:value="${m.ID_MEDICAMENTO}" th:text="${m.NOMBRE} + ' - ' + ${m.PRESENTACION}"
+                                th:selected="${valores[p.nombre()] == m.ID_MEDICAMENTO.toString()}"></option>
+                    </select>
+                </div>
+                <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-play-fill me-1"></i>Generar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" th:if="${error}"><i class="bi bi-exclamation-triangle me-1"></i><span th:text="${error}"></span></div>
+    <div class="card" th:if="${tabla}">
+        <div class="card-header d-flex justify-content-between">
+            <span th:text="${r.titulo()}"></span>
+            <small class="text-muted" th:text="${#lists.size(tabla.filas())} + ' filas · ' + ${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}"></small>
+        </div>
+        <div th:replace="~{fragments/tabla :: cursor(${tabla}, 'El reporte no devolvio filas')}"></div>
+    </div>
+    <div class="vacio" th:if="${tabla == null and error == null}"><i class="bi bi-funnel"></i>Elija los parametros y presione Generar</div>
+</section>
+</body>
+</html>
